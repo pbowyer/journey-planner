@@ -1,7 +1,9 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Loader;
 
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
 use PDO;
 
 /**
@@ -49,7 +51,7 @@ class DatabaseLoader {
             'origin' => $origin
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
     }
 
     /**
@@ -75,7 +77,7 @@ class DatabaseLoader {
             'startDate' => date("Y-m-d", $startTimestamp),
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
     }
 
     /**
@@ -86,7 +88,7 @@ class DatabaseLoader {
     public function getFastestConnections() {
         $stmt = $this->db->query("SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service FROM fastest_connection");
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
     }
 
     /**
@@ -96,7 +98,7 @@ class DatabaseLoader {
         $stmt = $this->db->query("SELECT origin, destination, duration, mode FROM non_timetable_connection");
         $results = [];
 
-        foreach ($stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\NonTimetableConnection', ['','','','','']) as $c) {
+        foreach ($stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\NonTimetableConnection', ['','','','','']) as $c) {
             if (isset($results[$c->getOrigin()])) {
                 $results[$c->getOrigin()][] = $c;
             }
@@ -144,14 +146,19 @@ class DatabaseLoader {
      */
     public function getScheduleFromTransferPattern($origin, $destination, $dateTime) {
         $stmt = $this->db->query("
-            SELECT dept.trip_id, dept.stop_id, dept.trip_id, dept.departure_time, arrv.stop_id, arrv.arrival_time
+            SELECT leg.transfer_pattern, leg.id, dept.trip_id, dept.stop_id, dept.departure_time, arrv.stop_id, arrv.arrival_time
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             JOIN stop_times as dept ON dept.stop_id = leg.origin
             JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = leg.destination
+            JOIN trips on dept.trip_id = trips.trip_id
+            JOIN calendar USING(service_id)
             WHERE arrv.stop_sequence > dept.stop_sequence
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
+            AND startDate <= :startDate AND endDate >= :startDate
+            AND {$dow} = 1
+            ORDER BY leg.transfer_pattern, leg.id, trip_id, dept.departure_time
         ");
 
         // TODO dateTime

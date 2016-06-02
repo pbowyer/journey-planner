@@ -5,9 +5,9 @@ namespace JourneyPlanner\App\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use JourneyPlanner\Lib\DatabaseLoader;
-use JourneyPlanner\Lib\TimetableConnection;
-use JourneyPlanner\Lib\ConnectionScanner;
+use JourneyPlanner\Lib\Loader\DatabaseLoader;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
 
 class PlanJourney extends ConsoleCommand {
     const NAME = 'plan-journey';

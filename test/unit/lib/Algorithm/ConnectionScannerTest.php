@@ -1,9 +1,8 @@
 <?php
 
-use JourneyPlanner\Lib\ConnectionScanner;
-use JourneyPlanner\Lib\TimetableConnection;
-use JourneyPlanner\Lib\NonTimetableConnection;
-use JourneyPlanner\Lib\Route;
+use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 
 class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 

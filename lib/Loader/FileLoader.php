@@ -1,8 +1,10 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Loader;
 
 use InvalidArgumentException;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
 
 /**
  * @author Linus Norton <linus.norton@assertis.co.uk>

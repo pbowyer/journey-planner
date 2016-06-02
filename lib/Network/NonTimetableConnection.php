@@ -1,6 +1,8 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Network;
+
+use JourneyPlanner\Lib\Network\TimetableConnection;
 
 class NonTimetableConnection extends Connection {
 

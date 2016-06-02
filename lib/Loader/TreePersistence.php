@@ -1,7 +1,8 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Loader;
 
+use JourneyPlanner\Lib\Algorithm\DijkstraShortestPath;
 use PDO;
 use Spork\ProcessManager;
 use Spork\Batch\Strategy\AbstractStrategy;

@@ -4,8 +4,8 @@ namespace JourneyPlanner\App;
 
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
-use JourneyPlanner\Lib\DatabaseLoader;
-use JourneyPlanner\Lib\TreePersistence;
+use JourneyPlanner\Lib\Loader\DatabaseLoader;
+use JourneyPlanner\Lib\Loader\TreePersistence;
 use PDO;
 use Pimple\Container;
 use Monolog\Logger;

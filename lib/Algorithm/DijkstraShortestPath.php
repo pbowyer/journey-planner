@@ -1,6 +1,6 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Algorithm;
 
 class DijkstraShortestPath {
 

@@ -2,8 +2,8 @@
 
 namespace JourneyPlanner\App\Api\View;
 
-use JourneyPlanner\Lib\TimetableConnection;
-use JourneyPlanner\Lib\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JsonSerializable;
 use stdClass;
 

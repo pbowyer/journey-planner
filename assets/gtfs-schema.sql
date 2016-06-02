@@ -36,7 +36,16 @@ CREATE TABLE `calendar` (
     sunday TINYINT(1) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    KEY `service_id` (service_id)
+    KEY `service_id` (service_id),
+    KEY `start_date` (`start_date`),
+    KEY `end_date` (`end_date`),
+    KEY `monday` (`monday`),
+    KEY `tuesday` (`tuesday`),
+    KEY `wednesday` (`wednesday`),
+    KEY `thursday` (`thursday`),
+    KEY `friday` (`friday`),
+    KEY `saturday` (`saturday`),
+    KEY `sunday` (`sunday`)
 );
 
 DROP TABLE IF EXISTS `fare_attributes`;

@@ -6,7 +6,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use JourneyPlanner\App\Api\View\JourneyPlan as JourneyPlanView;
-use JourneyPlanner\Lib\ConnectionScanner;
+use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
 
 class JourneyPlan {
 

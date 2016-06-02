@@ -1,7 +1,7 @@
 <?php
 
-use JourneyPlanner\Lib\DijkstraShortestPath;
-use JourneyPlanner\Lib\NonTimetableConnection;
+use JourneyPlanner\Lib\Algorithm\DijkstraShortestPath;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Route;
 
 class DijkstraShortestPathTest extends PHPUnit_Framework_TestCase {

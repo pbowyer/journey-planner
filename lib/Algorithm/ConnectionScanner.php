@@ -1,23 +1,27 @@
 <?php
 
-namespace JourneyPlanner\Lib;
+namespace JourneyPlanner\Lib\Algorithm;
+use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class ConnectionScanner {
+class ConnectionScanner implements JourneyPlanner {
 
     /**
      * Stores the list of connections. Please note that this timetable must be time ordered
      *
-     * @var Array
+     * @var TimetableConnection[]
      */
     private $timetable;
 
     /**
      * Stores the list of non timetabled connections
      *
-     * @var Array
+     * @var NonTimetableConnection[]
      */
     private $nonTimetable;
 
@@ -25,7 +29,7 @@ class ConnectionScanner {
      * HashMap storing the fastest available to connection to each station that can actually be
      * made based on previous connections.
      *
-     * @var Array
+     * @var Connection[]
      */
     private $connections;
 
@@ -33,14 +37,14 @@ class ConnectionScanner {
      * HashMap storing each connections earliest arrival time, it's used for convenience
      * when comparing connections with each other.
      *
-     * @var Array
+     * @var array
      */
     private $arrivals;
 
     /**
      * HashMap of station => interchange time required at that station when changing service
      *
-     * @var Array
+     * @var array
      */
     private $interchangeTimes;
 
@@ -92,7 +96,7 @@ class ConnectionScanner {
         }
     }
 
-    private function canGetToThisConnection(Connection $connection) {
+    private function canGetToThisConnection(TimetableConnection $connection) {
         return isset($this->arrivals[$connection->getOrigin()]) &&
                $connection->getDepartureTime() >= $this->arrivals[$connection->getOrigin()] + $this->getInterchangeTime($connection);
     }
@@ -103,7 +107,7 @@ class ConnectionScanner {
                $this->connections[$connection->getOrigin()]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$connection->getOrigin()] : 0;
     }
 
-    private function thisConnectionIsBetter(Connection $connection) {
+    private function thisConnectionIsBetter(TimetableConnection $connection) {
         return !isset($this->arrivals[$connection->getDestination()]) ||
                $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
     }
@@ -134,7 +138,7 @@ class ConnectionScanner {
      * Given a Hash Map of fastest connections trace back the route from the target
      * destination to the origin. If no route is found an empty array is returned
      *
-     * @param  strubg $origin
+     * @param  string $origin
      * @param  string $destination
      * @return array
      */

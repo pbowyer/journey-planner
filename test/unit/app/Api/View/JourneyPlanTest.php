@@ -1,7 +1,7 @@
 <?php
 
-use JourneyPlanner\Lib\TimetableConnection;
-use JourneyPlanner\Lib\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\App\Api\View\JourneyPlan;
 
 class JourneyPlanTest extends PHPUnit_Framework_TestCase {
