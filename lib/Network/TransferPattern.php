@@ -7,4 +7,23 @@ namespace JourneyPlanner\Lib\Network;
  */
 class TransferPattern {
 
+    /**
+     * @var array
+     */
+    private $legs;
+
+    /**
+     * @param array $legs
+     */
+    public function __construct(array $legs) {
+        $this->legs = $legs;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLegs() {
+        return $this->legs;
+    }
+
 }
