@@ -5,8 +5,8 @@ namespace JourneyPlanner\App\Api\Controller;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use JourneyPlan\App\Api\View\JourneyPlan as JourneyPlanView;
-use JourneyPlan\Lib\ConnectionScanner;
+use JourneyPlanner\App\Api\View\JourneyPlan as JourneyPlanView;
+use JourneyPlanner\Lib\ConnectionScanner;
 
 class JourneyPlan {
 
