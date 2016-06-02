@@ -2,8 +2,8 @@
 
 namespace JourneyPlanner\App;
 
-use JourneyPlanner\App\Command\PlanJourney;
-use JourneyPlanner\App\Command\CreateShortestPathTree;
+use JourneyPlanner\App\Console\Command\PlanJourney;
+use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
 use JourneyPlanner\Lib\DatabaseLoader;
 use JourneyPlanner\Lib\TreePersistence;
 use PDO;

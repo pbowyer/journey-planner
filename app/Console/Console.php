@@ -1,9 +1,10 @@
 <?php
 
-namespace JourneyPlanner\App;
+namespace JourneyPlanner\App\Console;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use JourneyPlanner\App\Container;
 
 class Console extends Application {
 
