@@ -1,0 +1,27 @@
+{
+  "name": "ljn/ojp",
+  "description": "Online Journey Planner",
+  "license": "Public Domain",
+  "authors": [
+    {
+      "name": "Linus Norton",
+      "email": "linusnorton@gmail.com"
+    }
+  ],
+  "repositories": [
+  ],
+  "autoload": {
+    "psr-4": {
+      "JourneyPlanner\\App\\": "app/",
+      "JourneyPlanner\\Lib\\": "lib/"
+    }
+  },
+  "require": {
+    "monolog/monolog": "^1.19",
+    "symfony/console": "^3.0",
+    "kriswallsmith/spork": "^0.3.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~5.1"
+  }
+}

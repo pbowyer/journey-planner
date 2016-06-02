@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+use JourneyPlanner\App\Container;
+use JourneyPlanner\App\Console;
+use JourneyPlanner\App\Command\PlanJourney;
+use Symfony\Component\Console\Input\StringInput;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$argv[0] = PlanJourney::NAME;
+$input = join(' ', $argv);
+
+$console = new Console(new Container());
+$console->run(new StringInput($input));

@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+use JourneyPlanner\App\Container;
+use JourneyPlanner\App\Console;
+use JourneyPlanner\App\Command\CreateShortestPathTree;
+use Symfony\Component\Console\Input\StringInput;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$console = new Console(new Container());
+$console->run(new StringInput(CreateShortestPathTree::NAME));
