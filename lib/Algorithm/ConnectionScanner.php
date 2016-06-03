@@ -1,15 +1,15 @@
 <?php
 
 namespace JourneyPlanner\Lib\Algorithm;
+
 use JourneyPlanner\Lib\Network\Connection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 
-
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class ConnectionScanner implements JourneyPlanner {
+class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator {
 
     /**
      * Stores the list of connections. Please note that this timetable must be time ordered
@@ -92,7 +92,16 @@ class ConnectionScanner implements JourneyPlanner {
                 $this->arrivals[$connection->getDestination()] = $connection->getArrivalTime();
 
                 $this->checkForBetterNonTimetableConnections($connection->getDestination());
+
             }
+            // TODO check the cost of this if is less than average time scanning pointless connections
+            //
+            // if this connection is going to the destination and it departs after the earliest arrival
+            // at the destination no connection after will ever be faster so we can just return
+            //
+            // if ($connection->getDestination() === $finalDestination && $connection->getDepartureTime() > $this->arrivals[$connection->getDestination()]) {
+            //     return;
+            // }
         }
     }
 
@@ -134,6 +143,7 @@ class ConnectionScanner implements JourneyPlanner {
             }
         }
     }
+
     /**
      * Given a Hash Map of fastest connections trace back the route from the target
      * destination to the origin. If no route is found an empty array is returned
@@ -158,5 +168,26 @@ class ConnectionScanner implements JourneyPlanner {
             return [];
         }
 
+    }
+
+    /**
+     * Slightly modified version of the CSA that returns the shortest journeys
+     * to each station from the given origin.
+     *
+     * @param  $origin
+     * @return array
+     */
+    public function getShortestPathTree($origin) {
+        $this->arrivals = [$origin => 0];
+        $this->connections = [];
+
+        $this->getConnections($origin);
+        $tree = [];
+
+        foreach (array_keys($this->connections) as $destination) {
+            $tree[$destination] = $this->getRouteFromConnections($origin, $destination);
+        }
+
+        return $tree;
     }
 }

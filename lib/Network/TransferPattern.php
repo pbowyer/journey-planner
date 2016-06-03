@@ -3,12 +3,12 @@
 namespace JourneyPlanner\Lib\Network;
 
 /**
- * @author Linus Norton <linus.norton@assertis.co.uk>
+ * @author Linus Norton <linusnorton@gmail.com>
  */
 class TransferPattern {
 
     /**
-     * @var array
+     * @var TimetableConnection[]
      */
     private $legs;
 
@@ -20,10 +20,24 @@ class TransferPattern {
     }
 
     /**
-     * @return array
+     * @return Connection[]
      */
     public function getLegs() {
         return $this->legs;
+    }
+
+    /**
+     * @param Connection[] $legs
+     * @return string
+     */
+    public static function getHash(array $legs) {
+        $hash = "";
+
+        foreach ($legs as $leg) {
+            $hash .= $leg->getOrigin().$leg->getDestination();
+        }
+
+        return $hash;
     }
 
 }

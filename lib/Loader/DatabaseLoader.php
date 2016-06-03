@@ -7,7 +7,7 @@ use JourneyPlanner\Lib\Network\TimetableConnection;
 use PDO;
 
 /**
- * @author Linus Norton <linus.norton@assertis.co.uk>
+ * @author Linus Norton <linusnorton@gmail.com>
  */
 class DatabaseLoader {
 
@@ -156,6 +156,7 @@ class DatabaseLoader {
             WHERE arrv.stop_sequence > dept.stop_sequence
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
+            AND dept.departure_time > :departureTime
             AND startDate <= :startDate AND endDate >= :startDate
             AND {$dow} = 1
             ORDER BY leg.transfer_pattern, leg.id, trip_id, dept.departure_time

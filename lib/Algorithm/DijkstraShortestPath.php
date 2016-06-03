@@ -2,7 +2,10 @@
 
 namespace JourneyPlanner\Lib\Algorithm;
 
-class DijkstraShortestPath {
+/**
+ * @author Linus Norton <linusnorton@gmail.com>
+ */
+class DijkstraShortestPath implements MinimumSpanningTreeGenerator {
 
     /**
      * @var array

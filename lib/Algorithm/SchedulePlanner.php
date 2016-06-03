@@ -44,6 +44,9 @@ class SchedulePlanner implements JourneyPlanner {
     }
 
     /**
+     * This journey planner uses a transfer pattern (precalculated legs) to scan a set of schedules and
+     * return a set of viable journeys
+     *
      * @param  string $origin
      * @param  string $destination
      * @param  string $departureTime
@@ -58,7 +61,12 @@ class SchedulePlanner implements JourneyPlanner {
         }
 
         try {
+            // create a journey for each connection in the first leg
             foreach (array_shift($legs) as $connection) {
+                if ($connection->getDepartureTime() < $departureTime) {
+                    continue;
+                }
+
                 $journey = [$connection];
                 $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
             }
@@ -68,14 +76,28 @@ class SchedulePlanner implements JourneyPlanner {
         }
     }
 
+    /**
+     * Recursive method that pops the next leg off the array of legs to find the first reachable connecting service.
+     *
+     * Once found the method calls itself again to do the next leg until there are no more legs left.
+     *
+     * @param  TimetableConnection $previousConnection
+     * @param  array               $legs
+     * @param  string              $destination
+     * @param  array               $journey
+     * @return Connnection[]
+     */
     private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, string $destination, array &$journey) {
+        $transferTime = 0;
         // if these connections aren't linked, we might need a non-timetable connection to link us
         if ($previousConnection->getDestination() !== $legs[0][0]->getOrigin()) {
-            $journey[] = $this->getQuickestTransfer($previousConnection->getDestination(), $legs[0][0]->getOrigin());
+            $transfer = $this->getTransfer($previousConnection->getDestination(), $legs[0][0]->getOrigin());
+            $journey[] = $transfer;
+            $transferTime = $transfer->getDuration();
         }
 
         foreach (array_shift($legs) as $connection) {
-            if ($previousConnection->getArrivalTime() + $this->getInterchange($connection->getOrigin()) < $connection->getDepartureTime()) {
+            if ($previousConnection->getArrivalTime() + $transferTime + $this->getInterchange($connection->getOrigin()) <= $connection->getDepartureTime()) {
                 $journey[] = $connection;
 
                 if ($connection->getDestination() === $destination) {
@@ -90,16 +112,26 @@ class SchedulePlanner implements JourneyPlanner {
         throw new Exception("Ran out of connections before reaching the destination");
     }
 
+    /**
+     * @param  string $station
+     * @return int
+     */
     private function getInterchange($station) {
         return isset($this->interchange[$station]) ? $this->interchange[$station] : 0;
     }
 
-    private function getQuickestTransfer($origin, $destination) {
-        // foreach ...
-        //  if o = d
-        //  return c
-        //
-        // else throw cannot connect ...
+    /**
+     * @param  string $origin
+     * @param  string $destination
+     * @return NonTimetableConnection
+     */
+    private function getTransfer($origin, $destination) {
+        foreach ($this->nonTimetable[$origin] as $transfer) {
+            if ($transfer->getDestination() === $destination) {
+                return $transfer;
+            }
+        }
+
         // need to check the data range too
         throw new Exception("No connection between {$origin} and {$destination}");
     }

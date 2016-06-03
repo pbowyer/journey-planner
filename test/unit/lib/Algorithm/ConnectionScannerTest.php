@@ -281,4 +281,43 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals($expectedRoute, $route);
     }
+
+    public function testGetShortestPathTree() {
+        $timetable = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+            new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500"),
+            new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000"),
+        ];
+
+        $nonTimetable = [
+            "WAE" => [
+                new NonTimetableConnection("WAE", "LBG", 20),
+            ]
+        ];
+
+        $interchangeTimes = [
+            "CHX" => 5
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
+        $tree = $scanner->getShortestPathTree("ORP");
+        $expectedTree = [
+            "WAE" => [
+                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")
+            ],
+            "CHX" => [
+                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")
+            ],
+            "LBG" => [
+                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+                new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500"),
+            ]
+        ];
+
+        $this->assertEquals($expectedTree, $tree);
+    }
 }
