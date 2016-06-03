@@ -67,6 +67,7 @@ class DijkstraShortestPath implements MinimumSpanningTreeGenerator {
         }
 
         $nodeDistance[$origin] = 0;
+        $current = null;
 
         // while we have un-checked edges in the queue
         while (!empty($queue)) {

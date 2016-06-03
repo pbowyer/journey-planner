@@ -1,7 +1,11 @@
 <?php
 
-namespace JourneyPlanner\Lib\Loader;
+namespace JourneyPlanner\Lib\Storage;
 
+use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\TransferPattern;
 use PDO;
 use Spork\ProcessManager;
 use Spork\Batch\Strategy\AbstractStrategy;
@@ -12,7 +16,7 @@ use Spork\Batch\Strategy\AbstractStrategy;
 class TransferPatternPersistence {
 
     const DAYS = [
-        "next monday"
+        "next monday",
         "next friday",
         "next saturday",
         "next sunday",
@@ -45,6 +49,16 @@ class TransferPatternPersistence {
     private $timetables;
 
     /**
+     * @var array
+     */
+    private $nonTimetableConnections;
+
+    /**
+     * @var array
+     */
+    private $interchange;
+
+    /**
      * @param ProcessManager   $processManager
      * @param AbstractStrategy $forkStrategy
      * @param callable         $pdoFactory
@@ -54,6 +68,8 @@ class TransferPatternPersistence {
         $this->forkStrategy = $forkStrategy;
         $this->dbFactory = $pdoFactory;
         $this->timetables = [];
+        $this->nonTimetableConnections = [];
+        $this->interchange = [];
     }
 
     /**
@@ -82,7 +98,7 @@ class TransferPatternPersistence {
 
         foreach (self::DAYS as $day) {
             foreach (self::HOURS as $hour) {
-                $timetables[] = $loader->getUnprunedTimetableConnections(strtotime("{$day} as {$time}"));
+                $timetables[] = $loader->getUnprunedTimetableConnections(strtotime("{$day} as {$hour}"));
             }
         }
 
@@ -93,12 +109,13 @@ class TransferPatternPersistence {
      * @param string $station
      */
     private function storeTransferPatternsForStation($station) {
+        /** @var PDO $db */
         $db = call_user_func($this->dbFactory);
         $insertPattern = $db->prepare("INSERT INTO transfer_pattern VALUES (null, ?, ?)");
         $insertLeg = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $patternsFound = [];
 
-        foreach ($this->timetable as $timetable) {
+        foreach ($this->timetables as $timetable) {
             $treeBuilder = new ConnectionScanner($timetable, $this->nonTimetableConnections, $this->interchange);
             $tree = $treeBuilder->getShortestPathTree($station);
 
@@ -110,7 +127,7 @@ class TransferPatternPersistence {
                     continue;
                 }
 
-                $insertPattern->execute([$origin, $destination]);
+                $insertPattern->execute([$station, $destination]);
                 $patternId = $db->lastInsertId();
                 $patternsFound[$hash] = true;
 

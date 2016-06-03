@@ -2,7 +2,6 @@
 
 namespace JourneyPlanner\Lib\Network;
 
-use JourneyPlanner\Lib\Network\Connection;
 
 class TimetableConnection extends Connection {
 

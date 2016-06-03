@@ -2,8 +2,6 @@
 
 namespace JourneyPlanner\Lib\Network;
 
-use JourneyPlanner\Lib\Network\TimetableConnection;
-
 class NonTimetableConnection extends Connection {
 
     private $duration;

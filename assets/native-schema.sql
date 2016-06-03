@@ -39,7 +39,8 @@ CREATE TABLE `timetable_connection` (
   KEY `saturday` (`saturday`),
   KEY `sunday` (`sunday`),
   KEY `destination` (`destination`),
-  KEY `arrivalTime` (`arrivalTime`)
+  KEY `arrivalTime` (`arrivalTime`),
+  KEY `departureTime` (`departureTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `shortest_path`;

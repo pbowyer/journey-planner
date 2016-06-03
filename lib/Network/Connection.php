@@ -2,8 +2,6 @@
 
 namespace JourneyPlanner\Lib\Network;
 
-use JourneyPlanner\Lib\Network\TimetableConnection;
-
 abstract class Connection {
 
     const TRAIN = "Train", BUS = "Bus", WALK = "Walk", TUBE = "Tube";

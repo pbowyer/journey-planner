@@ -72,7 +72,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
 
-        $this->getConnections($origin);
+        $this->getConnections($origin, $destination);
         return $this->getRouteFromConnections($origin, $destination);
     }
 
@@ -80,11 +80,13 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * Create a HashMap containing the best connections to each station. At present
      * the fastest connection is considered best.
      *
-     * @param  string $startStation
+     * @param string $startStation
+     * @param string $finalDestination
      */
-    private function getConnections($startStation) {
+    private function getConnections($startStation, $finalDestination) {
         // check for non timetable connections at the origin station
         $this->checkForBetterNonTimetableConnections($startStation);
+        $seenDestination = false;
 
         foreach ($this->timetable as $connection) {
             if ($this->canGetToThisConnection($connection) && $this->thisConnectionIsBetter($connection)) {
@@ -92,16 +94,14 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
                 $this->arrivals[$connection->getDestination()] = $connection->getArrivalTime();
 
                 $this->checkForBetterNonTimetableConnections($connection->getDestination());
-
+                $seenDestination = $seenDestination || $connection->getDestination() === $finalDestination;
             }
-            // TODO check the cost of this if is less than average time scanning pointless connections
-            //
-            // if this connection is going to the destination and it departs after the earliest arrival
-            // at the destination no connection after will ever be faster so we can just return
-            //
-            // if ($connection->getDestination() === $finalDestination && $connection->getDepartureTime() > $this->arrivals[$connection->getDestination()]) {
-            //     return;
-            // }
+
+            // if this connection departs after the earliest arrival at the destination no connection
+            // after will ever be faster so we can just return
+            if ($seenDestination && $connection->getDepartureTime() > $this->arrivals[$connection->getDestination()]) {
+                return;
+            }
         }
     }
 
@@ -181,7 +181,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         $this->arrivals = [$origin => 0];
         $this->connections = [];
 
-        $this->getConnections($origin);
+        $this->getAllConnections($origin);
         $tree = [];
 
         foreach (array_keys($this->connections) as $destination) {
@@ -189,5 +189,26 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         }
 
         return $tree;
+    }
+
+    /**
+     * This method differs only slightly to getConnections in that it does not stop once the earliest
+     * arrival at the destination has been found. It does this in order to get the fastest connections to
+     * every station in the timetable.
+     *
+     * @param string $startStation
+     */
+    private function getAllConnections($startStation) {
+        // check for non timetable connections at the origin station
+        $this->checkForBetterNonTimetableConnections($startStation);
+
+        foreach ($this->timetable as $connection) {
+            if ($this->canGetToThisConnection($connection) && $this->thisConnectionIsBetter($connection)) {
+                $this->connections[$connection->getDestination()] = $connection;
+                $this->arrivals[$connection->getDestination()] = $connection->getArrivalTime();
+
+                $this->checkForBetterNonTimetableConnections($connection->getDestination());
+            }
+        }
     }
 }

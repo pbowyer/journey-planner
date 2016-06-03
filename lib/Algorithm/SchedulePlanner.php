@@ -2,6 +2,8 @@
 
 namespace JourneyPlanner\Lib\Algorithm;
 
+use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use Exception;
@@ -33,7 +35,7 @@ class SchedulePlanner implements JourneyPlanner {
     private $interchangeTimes;
 
     /**
-     * @param TransferPattern[] $transferPattern
+     * @param TransferPattern $transferPattern
      * @param NonTimetableConnection[] $nonTimetable
      * @param array $interchangeTimes
      */
@@ -82,10 +84,11 @@ class SchedulePlanner implements JourneyPlanner {
      * Once found the method calls itself again to do the next leg until there are no more legs left.
      *
      * @param  TimetableConnection $previousConnection
-     * @param  array               $legs
-     * @param  string              $destination
-     * @param  array               $journey
+     * @param  array $legs
+     * @param  string $destination
+     * @param  array $journey
      * @return Connnection[]
+     * @throws Exception
      */
     private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, string $destination, array &$journey) {
         $transferTime = 0;
@@ -117,7 +120,7 @@ class SchedulePlanner implements JourneyPlanner {
      * @return int
      */
     private function getInterchange($station) {
-        return isset($this->interchange[$station]) ? $this->interchange[$station] : 0;
+        return isset($this->interchangeTimes[$station]) ? $this->interchangeTimes[$station] : 0;
     }
 
     /**

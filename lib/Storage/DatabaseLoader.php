@@ -1,6 +1,6 @@
 <?php
 
-namespace JourneyPlanner\Lib\Loader;
+namespace JourneyPlanner\Lib\Storage;
 
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
