@@ -110,7 +110,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
                $connection->getDepartureTime() >= $this->arrivals[$connection->getOrigin()] + $this->getInterchangeTime($connection);
     }
 
-    private function getInterchangeTime(Connection $connection) {
+    private function getInterchangeTime(TimetableConnection $connection) {
         return isset($this->connections[$connection->getOrigin()]) &&
                isset($this->interchangeTimes[$connection->getOrigin()]) &&
                $this->connections[$connection->getOrigin()]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$connection->getOrigin()] : 0;
@@ -122,7 +122,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     }
 
     /**
-     * For the given station for better non-timetabled connnections by calculating the potential arrival time
+     * For the given station for better non-timetabled connections by calculating the potential arrival time
      * at the non timetabled connections destination as the arrival at the origin + the duration.
      *
      * There is an assumption that the arrival at the given origin station can be made and as such $this->arrivals[$origin]

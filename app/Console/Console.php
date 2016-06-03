@@ -30,6 +30,7 @@ class Console extends Application {
 
         $defaultCommands[] = $this->container['command.plan_journey'];
         $defaultCommands[] = $this->container['command.create_tree'];
+        $defaultCommands[] = $this->container['command.transfer_pattern'];
 
         return $defaultCommands;
     }

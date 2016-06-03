@@ -22,5 +22,9 @@ class ConsoleCommand extends Command {
     protected function outputHeading(OutputInterface $out, $heading) {
         $out->writeLn(str_pad(" {$heading} ", 80, "#", STR_PAD_BOTH));
     }
+    
+    protected function outputMemoryUsage(OutputInterface $out) {
+        $out->writeLn("\nPeak memory usage: " . number_format(memory_get_peak_usage() / 1024 / 1024, 2) . "Mb");
+    }
 
 }

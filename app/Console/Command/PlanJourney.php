@@ -102,7 +102,7 @@ class PlanJourney extends ConsoleCommand {
 
         $this->displayRoute($out, $locations, $route);
 
-        $out->writeLn("\nPeak memory usage: " . number_format(memory_get_peak_usage() / 1024 / 1024, 2) . "Mb");
+        $this->outputMemoryUsage($out);
         $out->writeLn("Connections: ".count($timetableConnections));
     }
 

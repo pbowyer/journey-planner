@@ -2,9 +2,11 @@
 
 namespace JourneyPlanner\App;
 
+use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
+use JourneyPlanner\Lib\Storage\TransferPatternPersistence;
 use JourneyPlanner\Lib\Storage\TreePersistence;
 use PDO;
 use Pimple\Container;
@@ -36,6 +38,15 @@ class Container extends Container {
 
         $this['command.create_tree'] = function(Container $container) {
             return new CreateShortestPathTree($container['loader.database'], $container['persistence.tree']);
+        };
+
+        $this['command.transfer_pattern'] = function(Container $container) {
+            return new FindTransferPatterns(
+                $container['loader.database'],
+                new ProcessManager(),
+                new ChunkStrategy(16),
+                [$this, 'createPDO']
+            );
         };
 
         $this['loader.database'] = function(Container $container) {
