@@ -1,8 +1,10 @@
 <?php
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TransferPattern;
 
 class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
@@ -284,6 +286,30 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
     public function testGetShortestPathTree() {
         $timetable = [
+            new TimetableConnection("SEV", "ORP", 900, 940, "SE1000"),
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")
+        ];
+
+        $nonTimetable = [];
+        $interchangeTimes = [];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
+        $tree = $scanner->getShortestPathTree("SEV");
+        $expectedTree = [
+            "ORP" => new TransferPattern([
+                new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000")])
+            ]),
+            "WAE" => new TransferPattern([
+                new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000"),
+                         new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")])
+            ])
+        ];
+
+        $this->assertEquals($expectedTree, $tree);
+    }
+
+    public function testGetShortestPathTreeWithChange() {
+        $timetable = [
             new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
             new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
@@ -304,20 +330,25 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP");
         $expectedTree = [
-            "WAE" => [
-                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")
-            ],
-            "CHX" => [
-                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
-                new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")
-            ],
-            "LBG" => [
-                new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
-                new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
-                new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500"),
-            ]
+            "WAE" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")])
+            ]),
+            "LBG" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                    new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")]),
+                new Leg([new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500")]),
+            ]),
+            "CHX" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                         new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")])
+            ])
         ];
+        var_dump($tree);
 
         $this->assertEquals($expectedTree, $tree);
+    }
+
+    public function testTransferPatternsWithTransfer() {
+
     }
 }

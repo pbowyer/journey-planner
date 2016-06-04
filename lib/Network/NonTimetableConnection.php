@@ -28,10 +28,10 @@ class NonTimetableConnection extends Connection {
     /**
      * A transfer always needs interchange.
      *
-     * @param  TimetableConnection $connection
+     * @param  Connection $connection
      * @return boolean
      */
-    public function requiresInterchangeWith(TimetableConnection $connection) {
+    public function requiresInterchangeWith(Connection $connection) {
         return true;
     }
 }

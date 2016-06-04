@@ -90,7 +90,9 @@ CREATE TABLE `transfer_pattern` (
   `id` INT(12) unsigned AUTO_INCREMENT,
   `origin` char(12) NOT NULL,
   `destination` char(12) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `origin` (`origin`),
+  KEY `destination` (`destination`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `transfer_pattern_leg`;

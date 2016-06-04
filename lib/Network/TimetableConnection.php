@@ -56,10 +56,10 @@ class TimetableConnection extends Connection {
     /**
      * Check the service ID to see if we need to change
      *
-     * @param  TimetableConnection $connection
+     * @param  Connection $connection
      * @return boolean
      */
-    public function requiresInterchangeWith(TimetableConnection $connection) {
-        return $this->service != $connection->getService();
+    public function requiresInterchangeWith(Connection $connection) {
+        return $connection instanceof NonTimetableConnection || $this->service != $connection->getService();
     }
 }

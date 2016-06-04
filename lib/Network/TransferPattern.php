@@ -8,32 +8,31 @@ namespace JourneyPlanner\Lib\Network;
 class TransferPattern {
 
     /**
-     * @var TimetableConnection[]
+     * @var Leg[]
      */
     private $legs;
 
     /**
-     * @param array $legs
+     * @param Leg[] $legs
      */
     public function __construct(array $legs) {
         $this->legs = $legs;
     }
 
     /**
-     * @return Connection[]
+     * @return Leg[]
      */
     public function getLegs() {
         return $this->legs;
     }
 
     /**
-     * @param Connection[] $legs
      * @return string
      */
-    public static function getHash(array $legs) {
+    public function getHash() {
         $hash = "";
 
-        foreach ($legs as $leg) {
+        foreach ($this->legs as $leg) {
             $hash .= $leg->getOrigin().$leg->getDestination();
         }
 

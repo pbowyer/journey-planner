@@ -44,7 +44,7 @@ class Container extends Container {
             return new FindTransferPatterns(
                 $container['loader.database'],
                 new ProcessManager(),
-                new ChunkStrategy(16),
+                new ChunkStrategy(8),
                 [$this, 'createPDO']
             );
         };

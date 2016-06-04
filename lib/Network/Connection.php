@@ -43,10 +43,10 @@ abstract class Connection {
     }
 
     /**
-     * @param  TimetableConnection $connection
+     * @param  Connection $connection
      * @return boolean
      */
-    abstract function requiresInterchangeWith(TimetableConnection $connection);
+    abstract function requiresInterchangeWith(Connection $connection);
 
     /**
      * @return int

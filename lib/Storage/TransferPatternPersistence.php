@@ -62,8 +62,9 @@ class TransferPatternPersistence {
             $treeBuilder = new ConnectionScanner($timetable, $this->nonTimetableConnections, $this->interchange);
             $tree = $treeBuilder->getShortestPathTree($station);
 
-            foreach ($tree as $destination => $legs) {
-                $hash = TransferPattern::getHash($legs);
+            /** @var TransferPattern $pattern */
+            foreach ($tree as $destination => $pattern) {
+                $hash = $pattern->getHash();
 
                 // only store unique transfer patterns
                 if (isset($patternsFound[$hash])) {
@@ -74,9 +75,9 @@ class TransferPatternPersistence {
                 $patternId = $db->lastInsertId();
                 $patternsFound[$hash] = true;
 
-                foreach ($legs as $leg) {
+                foreach ($pattern->getLegs() as $leg) {
                     // NonTimetableConnections are not stored in the transfer patterns
-                    if ($leg instanceof TimetableConnection) {
+                    if (!$leg->isTransfer()) {
                         $insertLeg->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
                     }
                 }
