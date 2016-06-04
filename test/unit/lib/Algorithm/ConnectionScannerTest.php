@@ -343,7 +343,6 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
                          new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")])
             ])
         ];
-        var_dump($tree);
 
         $this->assertEquals($expectedTree, $tree);
     }

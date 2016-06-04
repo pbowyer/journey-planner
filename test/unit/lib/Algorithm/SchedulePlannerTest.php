@@ -4,11 +4,12 @@ use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
+use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 
 class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
     public function testBasicJourney() {
-        $transferPattern = new TransferPattern([
+        $schedule = new TransferPatternSchedule([
             [
                 new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
                 new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
@@ -26,7 +27,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
             ]
         ]);
 
-        $scanner = new SchedulePlanner($transferPattern, [], []);
+        $scanner = new SchedulePlanner($schedule, [], []);
         $journeys = $scanner->getRoute("A", "D", 900);
 
         $this->assertEquals([
@@ -49,7 +50,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testJourneyWithNonTimetableConnection() {
-        $transferPattern = new TransferPattern([
+        $schedule = new TransferPatternSchedule([
             [
                 new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
                 new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
@@ -69,7 +70,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
             ]
         ];
 
-        $scanner = new SchedulePlanner($transferPattern, $nonTimetable, []);
+        $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
         $journeys = $scanner->getRoute("A", "D", 900);
 
         $this->assertEquals([
@@ -92,7 +93,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testCantMakeUnreachableConnectionsWithTransfer() {
-        $transferPattern = new TransferPattern([
+        $schedule = new TransferPatternSchedule([
             [
                 new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
                 new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
@@ -112,7 +113,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
             ]
         ];
 
-        $scanner = new SchedulePlanner($transferPattern, $nonTimetable, []);
+        $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
         $journeys = $scanner->getRoute("A", "D", 900);
 
         $this->assertEquals([
@@ -135,7 +136,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testJourneyWithUnreachableLegs() {
-        $transferPattern = new TransferPattern([
+        $schedule = new TransferPatternSchedule([
             [
                 new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
                 new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
@@ -154,7 +155,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
             ]
         ]);
 
-        $scanner = new SchedulePlanner($transferPattern, [], []);
+        $scanner = new SchedulePlanner($schedule, [], []);
         $journeys = $scanner->getRoute("A", "D", 1005);
 
         $this->assertEquals([

@@ -4,6 +4,8 @@ namespace JourneyPlanner\Lib\Storage;
 
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\TransferPattern;
+use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 use PDO;
 
 /**
@@ -141,27 +143,67 @@ class DatabaseLoader {
     /**
      * @param  string $origin
      * @param  string $destination
-     * @param  int $dateTime
-     * @return TimetableConnection[]
+     * @param  int $startTimestamp
+     * @return TransferPattern[]
      */
-    public function getScheduleFromTransferPattern($origin, $destination, $dateTime) {
-        $stmt = $this->db->query("
-            SELECT leg.transfer_pattern, leg.id, dept.trip_id, dept.stop_id, dept.departure_time, arrv.stop_id, arrv.arrival_time
+    public function getScheduleFromTransferPattern($origin, $destination, $startTimestamp) {
+        $dow = lcfirst(date('l', $startTimestamp));
+
+        $stmt = $this->db->prepare("
+            SELECT 
+              leg.transfer_pattern, 
+              leg.id, 
+              dept.trip_id, 
+              ostation.parent_station as origin, 
+              TIME_TO_SEC(dept.departure_time) as departureTime, 
+              dstation.parent_station as destination, 
+              TIME_TO_SEC(arrv.arrival_time) as arrivalTime
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
-            JOIN stop_times as dept ON dept.stop_id = leg.origin
-            JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = leg.destination
+            JOIN stops ostation ON ostation.parent_station = leg.origin
+            JOIN stops dstation ON dstation.parent_station = leg.destination
+            JOIN stop_times as dept ON dept.stop_id = ostation.stop_id
+            JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = dstation.stop_id
             JOIN trips on dept.trip_id = trips.trip_id
             JOIN calendar USING(service_id)
             WHERE arrv.stop_sequence > dept.stop_sequence
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
             AND dept.departure_time > :departureTime
-            AND startDate <= :startDate AND endDate >= :startDate
+            AND start_date >= :startDate AND end_date <= :startDate
             AND {$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, trip_id, dept.departure_time
+            ORDER BY leg.transfer_pattern, leg.id, dept.departure_time
         ");
 
-        // TODO dateTime
+        $stmt->execute([
+            'departureTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
+            'startDate' => date("Y-m-d", $startTimestamp),
+            'origin' => $origin,
+            'destination' => $destination
+        ]);
+
+        $results = [];
+        $previousLeg = null;
+        $previousPattern = null;
+        $legs = [];
+        $connections = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($previousLeg && $previousLeg !== $row["id"]) {
+                $legs[] = $connections;
+                $connections = [];
+            }
+
+            if ($previousPattern && $previousPattern !== $row["transfer_pattern"]) {
+                $results[] = new TransferPatternSchedule($legs);
+                $legs = [];
+            }
+
+            $connections[] = new TimetableConnection($row["origin"], $row["destination"], $row["departureTime"], $row["arrivalTime"], $row["trip_id"]);
+            $previousLeg = $row["id"];
+            $previousPattern = $row["transfer_pattern"];
+        }
+
+        return $results;
     }
 }

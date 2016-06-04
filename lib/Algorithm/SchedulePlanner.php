@@ -7,6 +7,7 @@ use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use Exception;
+use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
@@ -16,9 +17,9 @@ class SchedulePlanner implements JourneyPlanner {
     /**
      * Stores the list of connections. Please note that this timetable must be time ordered
      *
-     * @var TransferPattern
+     * @var TransferPatternSchedule
      */
-    private $transferPattern;
+    private $schedule;
 
     /**
      * Stores the list of non timetabled connections
@@ -35,12 +36,12 @@ class SchedulePlanner implements JourneyPlanner {
     private $interchangeTimes;
 
     /**
-     * @param TransferPattern $transferPattern
+     * @param TransferPatternSchedule $schedule
      * @param NonTimetableConnection[] $nonTimetable
      * @param array $interchangeTimes
      */
-    public function __construct(TransferPattern $transferPattern, array $nonTimetable, array $interchangeTimes) {
-        $this->transferPattern = $transferPattern;
+    public function __construct(TransferPatternSchedule $schedule, array $nonTimetable, array $interchangeTimes) {
+        $this->schedule = $schedule;
         $this->nonTimetable = $nonTimetable;
         $this->interchangeTimes = $interchangeTimes;
     }
@@ -56,7 +57,7 @@ class SchedulePlanner implements JourneyPlanner {
      */
     public function getRoute($origin, $destination, $departureTime) {
         $journeys = [];
-        $legs = $this->transferPattern->getLegs();
+        $legs = $this->schedule->getLegs();
 
         if (count($legs) === 1) {
             return $legs;
@@ -87,10 +88,10 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  array $legs
      * @param  string $destination
      * @param  array $journey
-     * @return Connnection[]
+     * @return Connection[]
      * @throws Exception
      */
-    private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, string $destination, array &$journey) {
+    private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, $destination, array &$journey) {
         $transferTime = 0;
         // if these connections aren't linked, we might need a non-timetable connection to link us
         if ($previousConnection->getDestination() !== $legs[0][0]->getOrigin()) {
@@ -127,6 +128,7 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  string $origin
      * @param  string $destination
      * @return NonTimetableConnection
+     * @throws Exception
      */
     private function getTransfer($origin, $destination) {
         foreach ($this->nonTimetable[$origin] as $transfer) {

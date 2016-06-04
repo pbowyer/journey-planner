@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\App\Console\Command;
 
+use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -63,7 +64,8 @@ class PlanJourney extends ConsoleCommand {
             $date = time();
         }
 
-        $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        $this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        //$this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
 
         return 0;
     }
@@ -86,7 +88,7 @@ class PlanJourney extends ConsoleCommand {
             return $this->loader->getNonTimetableConnections();
         });
 
-        $interchangeTimes = $this->outputTask($out, "Loading intechange", function () {
+        $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {
             return $this->loader->getInterchangeTimes();
         });
 
@@ -103,7 +105,46 @@ class PlanJourney extends ConsoleCommand {
         $this->displayRoute($out, $locations, $route);
 
         $this->outputMemoryUsage($out);
-        $out->writeLn("Connections: ".count($timetableConnections));
+        $out->writeln("Connections: ".count($timetableConnections));
+    }
+    
+    private function planMutlipleJourneys(OutputInterface $out, $origin, $destination, $targetTime) {
+        $this->outputHeading($out, "Journey Planner");
+
+        $schedules = $this->outputTask($out, "Loading schedules", function () use ($targetTime, $origin, $destination) {
+            return $this->loader->getScheduleFromTransferPattern($origin, $destination, $targetTime);
+        });
+
+        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () {
+            return $this->loader->getNonTimetableConnections();
+        });
+
+        $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {
+            return $this->loader->getInterchangeTimes();
+        });
+
+        $locations = $this->outputTask($out, "Loading locations", function () {
+            return $this->loader->getLocations();
+        });
+
+        $results = $this->outputTask($out, "Plan journeys", function () use ($schedules, $nonTimetableConnections, $interchangeTimes, $targetTime, $origin, $destination) {
+            $results = [];
+            foreach ($schedules as $schedule) {
+                $scanner = new SchedulePlanner($schedule, $nonTimetableConnections, $interchangeTimes);
+                $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
+                $journeys = $scanner->getRoute($origin, $destination, $time);
+                $results = array_merge($results, $journeys);
+            }
+
+            return $results;
+        });
+
+        foreach ($results as $route) {
+            $this->displayRoute($out, $locations, $route);
+        }
+
+        $this->outputMemoryUsage($out);
+        $out->writeln("Number of transfer patterns: ".count($schedules));
     }
 
     /**
@@ -119,14 +160,14 @@ class PlanJourney extends ConsoleCommand {
             $destination = sprintf('%30s', $locations[$connection->getDestination()]);
 
             if ($connection instanceof TimetableConnection) {
-                $out->writeLn(
+                $out->writeln(
                     date('H:i', $connection->getDepartureTime()).' '.$origin.' '.
                     $connection->getService().' '.
                     $destination.' '.date('H:i', $connection->getArrivalTime())
                 );
             }
             else {
-                $out->writeLn(
+                $out->writeln(
                     $connection->getMode().
                     " from ".$origin.
                     " to ".$destination.
