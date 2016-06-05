@@ -11,8 +11,7 @@ echo "Importing agency"
 COLUMNS=$(head -n 1 $DIR/gtfs/agency.txt)
 mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/agency.txt' INTO TABLE agency FIELDS TERMINATED BY ',' IGNORE 1 LINES ($COLUMNS)"
 echo "Importing calendar"
-COLUMNS=$(head -n 1 $DIR/gtfs/calendar.txt)
-mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/calendar.txt' INTO TABLE calendar FIELDS TERMINATED BY ',' IGNORE 1 LINES ($COLUMNS)"
+mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/calendar.txt' INTO TABLE calendar FIELDS TERMINATED BY ',' IGNORE 1 LINES (service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,@date) SET end_date= STR_TO_DATE(@date,'%Y%m%d')"
 echo "Importing routes"
 COLUMNS=$(head -n 1 $DIR/gtfs/routes.txt)
 mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/routes.txt' INTO TABLE routes FIELDS TERMINATED BY ',' IGNORE 1 LINES ($COLUMNS)"
@@ -36,9 +35,6 @@ COLUMNS=$(head -n 1 $DIR/gtfs/feed_info.txt)
 mysql -u root ojp -e "LOAD DATA INFILE '$DIR/gtfs/feed_info.txt' INTO TABLE feed_info FIELDS TERMINATED BY ',' IGNORE 1 LINES ($COLUMNS)"
 rm -rf $DIR/gtfs/
 
-# Fudge for calendar end_date not being set
-mysql -u root ojp -e "UPDATE calendar SET end_date = '2999-12-31'"
-
 # copying to native format
 echo "Creating native schema"
 mysql -u root ojp < $DIR/../assets/native-schema.sql
@@ -49,4 +45,4 @@ mysql -u root ojp -e "DELETE FROM timetable_connection WHERE origin = '   '"
 mysql -u root ojp -e "DELETE FROM timetable_connection WHERE origin = destination"
 mysql -u root ojp -e "DELETE FROM timetable_connection WHERE departureTime > arrivalTime"
 mysql -u root ojp -e "INSERT INTO interchange SELECT from_stop_id, min_transfer_time FROM transfers"
-mysql -u root ojp -e "INSERT INTO non_timetable_connection SELECT null, from_stop_id, to_stop_id, link_secs / 60, mode, start_time, end_time, start_date, end_date, monday, tuesday, wednesday, thursday, friday, saturday, sunday FROM links"
+mysql -u root ojp -e "INSERT INTO non_timetable_connection SELECT null, from_stop_id, to_stop_id, link_secs, mode, start_time, end_time, start_date, end_date, monday, tuesday, wednesday, thursday, friday, saturday, sunday FROM links"

@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\App\Console\Command;
 
+use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
 use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -128,15 +129,10 @@ class PlanJourney extends ConsoleCommand {
         });
 
         $results = $this->outputTask($out, "Plan journeys", function () use ($schedules, $nonTimetableConnections, $interchangeTimes, $targetTime, $origin, $destination) {
-            $results = [];
-            foreach ($schedules as $schedule) {
-                $scanner = new SchedulePlanner($schedule, $nonTimetableConnections, $interchangeTimes);
-                $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
-                $journeys = $scanner->getRoute($origin, $destination, $time);
-                $results = array_merge($results, $journeys);
-            }
-
-            return $results;
+            $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
+            $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
+            
+            return $scanner->getRoute($origin, $destination, $time);
         });
 
         foreach ($results as $route) {

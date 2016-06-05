@@ -169,8 +169,8 @@ class DatabaseLoader {
             WHERE arrv.stop_sequence > dept.stop_sequence
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
-            AND dept.departure_time > :departureTime
-            AND start_date >= :startDate AND end_date <= :startDate
+            AND dept.departure_time >= SEC_TO_TIME(:departureTime)
+            AND start_date <= :startDate AND end_date >= :startDate
             AND {$dow} = 1
             ORDER BY leg.transfer_pattern, leg.id, dept.departure_time
         ");
