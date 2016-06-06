@@ -167,4 +167,58 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ], $journeys);
     }
 
+    public function testJourneyWithFirstLegUnreachable() {
+        $schedule = new TransferPatternSchedule([
+            [
+                new TimetableConnection("A", "B", 1400, 1415, "LN1111"),
+                new TimetableConnection("A", "B", 1520, 1545, "LN1112"),
+                new TimetableConnection("A", "B", 1600, 1615, "LN1113"),
+                new TimetableConnection("A", "B", 1700, 1715, "LN1114"),
+            ],
+            [
+                new TimetableConnection("B", "C", 1020, 1045, "LN1121"),
+                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
+                new TimetableConnection("B", "C", 1200, 1215, "LN1123"),
+            ],
+            [
+                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
+                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
+                new TimetableConnection("C", "D", 1300, 1315, "LN1133"),
+            ]
+        ]);
+
+        $scanner = new SchedulePlanner($schedule, [], []);
+        $journeys = $scanner->getRoute("A", "D", 1005);
+
+        $this->assertEquals([], $journeys);
+    }
+
+    public function testJourneyWithTransferForFirstLeg() {
+        $schedule = new TransferPatternSchedule([
+            [
+                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
+            ],
+            [
+                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
+            ]
+        ]);
+
+        $nonTimetable = [
+            "A" => [
+                new NonTimetableConnection("A", "B", 5),
+            ]
+        ];
+
+        $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
+        $journeys = $scanner->getRoute("A", "D", 1005);
+
+        $this->assertEquals([
+            [
+                new NonTimetableConnection("A", "B", 5),
+                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
+                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
+            ]
+        ], $journeys);
+    }
+
 }

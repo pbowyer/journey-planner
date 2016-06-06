@@ -59,7 +59,7 @@ class SchedulePlanner implements JourneyPlanner {
         $journeys = [];
         $legs = $this->schedule->getLegs();
 
-        if (count($legs) === 1) {
+        if (count($legs) === 1 && $legs[0][0]->getOrigin() === $origin) {
             return $legs;
         }
 
@@ -70,7 +70,13 @@ class SchedulePlanner implements JourneyPlanner {
                     continue;
                 }
 
-                $journey = [$connection];
+                if ($connection->getOrigin() === $origin) {
+                    $journey = [$connection];
+                }
+                else {
+                    $journey = [$this->getTransfer($origin, $connection->getOrigin()), $connection];
+                }
+
                 $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
             }
         }

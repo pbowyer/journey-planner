@@ -348,6 +348,40 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testTransferPatternsWithTransfer() {
+        $timetable = [
+            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
+            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+            new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500"),
+            new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000"),
+        ];
 
+        $nonTimetable = [
+            "WAE" => [
+                new NonTimetableConnection("WAE", "LBG", 5),
+            ]
+        ];
+
+        $interchangeTimes = [
+            "CHX" => 5
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
+        $tree = $scanner->getShortestPathTree("ORP");
+        $expectedTree = [
+            "WAE" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")])
+            ]),
+            "LBG" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")]),
+                new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
+            ]),
+            "CHX" => new TransferPattern([
+                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                         new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")])
+            ])
+        ];
+
+        $this->assertEquals($expectedTree, $tree);
     }
 }

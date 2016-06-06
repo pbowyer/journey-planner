@@ -131,7 +131,7 @@ class PlanJourney extends ConsoleCommand {
         $results = $this->outputTask($out, "Plan journeys", function () use ($schedules, $nonTimetableConnections, $interchangeTimes, $targetTime, $origin, $destination) {
             $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
             $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
-            
+
             return $scanner->getRoute($origin, $destination, $time);
         });
 
@@ -158,16 +158,17 @@ class PlanJourney extends ConsoleCommand {
             if ($connection instanceof TimetableConnection) {
                 $out->writeln(
                     date('H:i', $connection->getDepartureTime()).' '.$origin.' '.
-                    $connection->getService().' '.
+                    sprintf('%-6s', $connection->getService()).' '.
                     $destination.' '.date('H:i', $connection->getArrivalTime())
                 );
             }
             else {
                 $out->writeln(
-                    $connection->getMode().
-                    " from ".$origin.
-                    " to ".$destination.
-                    " (".($connection->getDuration())." minutes)"
+                    sprintf('%-6s', $connection->getMode()).
+                    $origin.
+                    '   to'.
+                    $destination.
+                    " (".($connection->getDuration() / 60)."mins)"
                 );
             }
         }
