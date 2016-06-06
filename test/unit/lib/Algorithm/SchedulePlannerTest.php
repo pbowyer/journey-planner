@@ -1,6 +1,8 @@
 <?php
 
 use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
+use JourneyPlanner\Lib\Network\Journey;
+use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
@@ -28,24 +30,24 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ]);
 
         $scanner = new SchedulePlanner($schedule, [], []);
-        $journeys = $scanner->getRoute("A", "D", 900);
+        $journeys = $scanner->getJourneys("A", "D", 900);
 
         $this->assertEquals([
-            [
-                new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
-                new TimetableConnection("B", "C", 1020, 1045, "LN1121"),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
-                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
-                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1100, 1115, "LN1113"),
-                new TimetableConnection("B", "C", 1200, 1215, "LN1123"),
-                new TimetableConnection("C", "D", 1300, 1315, "LN1133"),
-            ]
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+            ])
         ], $journeys);
     }
 
@@ -71,24 +73,24 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
-        $journeys = $scanner->getRoute("A", "D", 900);
+        $journeys = $scanner->getJourneys("A", "D", 900);
 
         $this->assertEquals([
-            [
-                new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
-                new NonTimetableConnection("B", "C", 5),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
-                new NonTimetableConnection("B", "C", 5),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1100, 1115, "LN1113"),
-                new NonTimetableConnection("B", "C", 5),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ]
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new NonTimetableConnection("B", "C", 5)]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new NonTimetableConnection("B", "C", 5)]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new NonTimetableConnection("B", "C", 5)]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
         ], $journeys);
     }
 
@@ -114,24 +116,24 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
-        $journeys = $scanner->getRoute("A", "D", 900);
+        $journeys = $scanner->getJourneys("A", "D", 900);
 
         $this->assertEquals([
-            [
-                new TimetableConnection("A", "B", 1000, 1015, "LN1111"),
-                new NonTimetableConnection("B", "C", 15),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
-                new NonTimetableConnection("B", "C", 15),
-                new TimetableConnection("C", "D", 1120, 1145, "LN1131"),
-            ],
-            [
-                new TimetableConnection("A", "B", 1100, 1115, "LN1113"),
-                new NonTimetableConnection("B", "C", 15),
-                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
-            ]
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new NonTimetableConnection("B", "C", 15)]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new NonTimetableConnection("B", "C", 15)]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new NonTimetableConnection("B", "C", 15)]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+            ]),
         ], $journeys);
     }
 
@@ -156,14 +158,14 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ]);
 
         $scanner = new SchedulePlanner($schedule, [], []);
-        $journeys = $scanner->getRoute("A", "D", 1005);
+        $journeys = $scanner->getJourneys("A", "D", 1005);
 
         $this->assertEquals([
-            [
-                new TimetableConnection("A", "B", 1020, 1045, "LN1112"),
-                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
-                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
-            ]
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+            ])
         ], $journeys);
     }
 
@@ -188,7 +190,7 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ]);
 
         $scanner = new SchedulePlanner($schedule, [], []);
-        $journeys = $scanner->getRoute("A", "D", 1005);
+        $journeys = $scanner->getJourneys("A", "D", 1005);
 
         $this->assertEquals([], $journeys);
     }
@@ -210,14 +212,14 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new SchedulePlanner($schedule, $nonTimetable, []);
-        $journeys = $scanner->getRoute("A", "D", 1005);
+        $journeys = $scanner->getJourneys("A", "D", 1005);
 
         $this->assertEquals([
-            [
-                new NonTimetableConnection("A", "B", 5),
-                new TimetableConnection("B", "C", 1100, 1145, "LN1122"),
-                new TimetableConnection("C", "D", 1200, 1245, "LN1132"),
-            ]
+            new Journey([
+                new Leg([new NonTimetableConnection("A", "B", 5)]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+            ])
         ], $journeys);
     }
 

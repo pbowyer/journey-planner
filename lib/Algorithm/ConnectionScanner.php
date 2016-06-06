@@ -3,6 +3,7 @@
 namespace JourneyPlanner\Lib\Algorithm;
 
 use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\Journey;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
@@ -68,14 +69,22 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * @param  string $origin
      * @param  string $destination
      * @param  string $departureTime
-     * @return array
+     * @return Journey[]
      */
-    public function getRoute($origin, $destination, $departureTime) {
+    public function getJourneys($origin, $destination, $departureTime) {
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
 
         $this->getConnections($origin, $destination);
-        return $this->getRouteFromConnections($origin, $destination);
+        
+        $legs = $this->getLegsFromConnections($origin, $destination);
+        
+        if (count($legs) > 0) {
+            return [new Journey($legs)];
+        }
+        else {
+            return [];
+        }
     }
 
     /**
@@ -152,22 +161,31 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      *
      * @param  string $origin
      * @param  string $destination
-     * @return array
+     * @return Leg[]
      */
-    private function getRouteFromConnections($origin, $destination) {
-        $route = [];
-
+    private function getLegsFromConnections($origin, $destination) {
+        $legs = [];
+        $callingPoints = [];
+        $previousConnection = null;
+        
         while (isset($this->connections[$destination])) {
-            $route[] = $this->connections[$destination];
+            if ($previousConnection && $previousConnection->requiresInterchangeWith($this->connections[$destination])) {
+                $legs[] = new Leg(array_reverse($callingPoints));
+                $callingPoints = [];
+            }
+            
+            $callingPoints[] = $this->connections[$destination];
+            $previousConnection = $this->connections[$destination];
             $destination = $this->connections[$destination]->getOrigin();
         }
 
         // if we found a route back to the origin
         if ($origin === $destination) {
-            return array_reverse($route);
+            $legs[] = new Leg(array_reverse($callingPoints));
+            return array_reverse($legs);
         }
         else {
-            return [];
+            return null;
         }
     }
 
@@ -186,7 +204,9 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         $tree = [];
 
         foreach (array_keys($this->connections) as $destination) {
-            $tree[$destination] = $this->getTransferPatternFromConnections($origin, $destination);
+            $tree[$destination] = new TransferPattern(
+                $this->getLegsFromConnections($origin, $destination)
+            );
         }
 
         return $tree;
@@ -210,41 +230,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
                 $this->checkForBetterNonTimetableConnections($connection->getDestination());
             }
-        }
-    }
-
-    /**
-     * Given a Hash Map of fastest connections trace back the route from the target
-     * destination to the origin storing only the change of services
-     *
-     * @param  string $origin
-     * @param  string $destination
-     * @return TransferPattern
-     */
-    private function getTransferPatternFromConnections($origin, $destination) {
-        $legs = [];
-        $callingPoints = [];
-        $previousConnection = null;
-
-        while (isset($this->connections[$destination])) {
-            if ($previousConnection && $previousConnection->requiresInterchangeWith($this->connections[$destination])) {
-                $legs[] = new Leg(array_reverse($callingPoints));
-                $callingPoints = [];
-            }
-
-            $callingPoints[] = $this->connections[$destination];
-            $previousConnection = $this->connections[$destination];
-            $destination = $this->connections[$destination]->getOrigin();
-        }
-
-        $legs[] = new Leg(array_reverse($callingPoints));
-
-        // if we found a route back to the origin
-        if ($origin === $destination) {
-            return new TransferPattern(array_reverse($legs));
-        }
-        else {
-            return null;
         }
     }
 

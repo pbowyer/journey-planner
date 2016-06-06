@@ -4,6 +4,7 @@ namespace JourneyPlanner\App\Console\Command;
 
 use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
 use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
+use JourneyPlanner\Lib\Network\Journey;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -100,7 +101,7 @@ class PlanJourney extends ConsoleCommand {
         $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
 
         $route = $this->outputTask($out, "Plan journey", function () use ($scanner, $targetTime, $origin, $destination) {
-            return $scanner->getRoute($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
+            return $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
         });
 
         $this->displayRoute($out, $locations, $route);
@@ -132,7 +133,7 @@ class PlanJourney extends ConsoleCommand {
             $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
             $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
 
-            return $scanner->getRoute($origin, $destination, $time);
+            return $scanner->getJourneys($origin, $destination, $time);
         });
 
         foreach ($results as $route) {
@@ -146,29 +147,29 @@ class PlanJourney extends ConsoleCommand {
     /**
      * @param  OutputInterface $out
      * @param  array           $locations
-     * @param  Connection[]    $route
+     * @param  Journey         $journey
      */
-    private function displayRoute(OutputInterface $out, array $locations, $route) {
+    private function displayRoute(OutputInterface $out, array $locations, Journey $journey) {
         $this->outputHeading($out, "Route");
 
-        foreach ($route as $connection) {
-            $origin = sprintf('%-30s', $locations[$connection->getOrigin()]);
-            $destination = sprintf('%30s', $locations[$connection->getDestination()]);
+        foreach ($journey->getLegs() as $leg) {
+            $origin = sprintf('%-30s', $locations[$leg->getOrigin()]);
+            $destination = sprintf('%30s', $locations[$leg->getDestination()]);
 
-            if ($connection instanceof TimetableConnection) {
+            if (!$leg->isTransfer()) {
                 $out->writeln(
-                    date('H:i', $connection->getDepartureTime()).' '.$origin.' '.
-                    sprintf('%-6s', $connection->getService()).' '.
-                    $destination.' '.date('H:i', $connection->getArrivalTime())
+                    date('H:i', $leg->getFirstConnection()->getDepartureTime()).' '.$origin.' '.
+                    sprintf('%-6s', $leg->getFirstConnection()->getService()).' '.
+                    $destination.' '.date('H:i', $leg->getLastConnection()->getArrivalTime())
                 );
             }
             else {
                 $out->writeln(
-                    sprintf('%-6s', $connection->getMode()).
+                    sprintf('%-6s', $leg->getMode()).
                     $origin.
                     '   to'.
                     $destination.
-                    " (".($connection->getDuration() / 60)."mins)"
+                    " (".($leg->getDuration() / 60)."mins)"
                 );
             }
         }

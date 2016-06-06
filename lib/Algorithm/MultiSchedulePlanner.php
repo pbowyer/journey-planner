@@ -3,6 +3,7 @@
 namespace JourneyPlanner\Lib\Algorithm;
 
 use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\Journey;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TimetableConnection;
@@ -43,19 +44,19 @@ class MultiSchedulePlanner implements JourneyPlanner {
      * @param  string $origin
      * @param  string $destination
      * @param  string $departureTime
-     * @return Connection[]
+     * @return Journey[]
      */
-    public function getRoute($origin, $destination, $departureTime) {
+    public function getJourneys($origin, $destination, $departureTime) {
         $results = [];
         
         foreach ($this->schedules as $schedule) {
             $scanner = new SchedulePlanner($schedule, $this->nonTimetableConnections, $this->interchangeTimes);
-            $journeys = $scanner->getRoute($origin, $destination, $departureTime);
+            $journeys = $scanner->getJourneys($origin, $destination, $departureTime);
             $results = array_merge($results, $journeys);
         }
 
-        usort($results, function ($a, $b) {
-            return $a[0]->getDepartureTime() <=> $b[0]->getDepartureTime();
+        usort($results, function (Journey $a, Journey $b) {
+            return $a->getDepartureTime() <=> $b->getDepartureTime();
         });
 
         return $results;

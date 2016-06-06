@@ -2,11 +2,12 @@
 
 namespace JourneyPlanner\App\Api\Controller;
 
+use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
+use JourneyPlanner\Lib\Network\Journey;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use JourneyPlanner\App\Api\View\JourneyPlan as JourneyPlanView;
-use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\App\Api\View\JourneyView;
 
 class JourneyPlan {
 
@@ -21,15 +22,14 @@ class JourneyPlan {
         $destination = $request->get('destination');
         $targetTime = strtotime($request->get('date'));
 
-        $timetableConnections = $app['loader.database']->getUnprunedTimetableConnections($targetTime);
+        $timetableConnections = $app['loader.database']->getScheduleFromTransferPattern($origin, $destination, $targetTime);
         $nonTimetableConnections = $app['loader.database']->getNonTimetableConnections();
         $interchangeTimes = $app['loader.database']->getInterchangeTimes();
-        $locations = $app['loader.database']->getLocations();
 
-        $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
-        $route = $scanner->getRoute($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
-        $view = new JourneyPlanView($route);
+        $scanner = new MultiSchedulePlanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
+        $journeys = $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
+        $views = array_map(function(Journey $journey) { return new JourneyView($journey); }, $journeys);
 
-        return new JsonResponse($view);
+        return new JsonResponse($views);
     }
 }

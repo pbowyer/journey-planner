@@ -3,6 +3,8 @@
 namespace JourneyPlanner\Lib\Algorithm;
 
 use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\Journey;
+use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TimetableConnection;
@@ -55,7 +57,7 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  string $departureTime
      * @return Connection[]
      */
-    public function getRoute($origin, $destination, $departureTime) {
+    public function getJourneys($origin, $destination, $departureTime) {
         $journeys = [];
         $legs = $this->schedule->getLegs();
 
@@ -71,10 +73,13 @@ class SchedulePlanner implements JourneyPlanner {
                 }
 
                 if ($connection->getOrigin() === $origin) {
-                    $journey = [$connection];
+                    $journey = [new Leg([$connection])];
                 }
                 else {
-                    $journey = [$this->getTransfer($origin, $connection->getOrigin()), $connection];
+                    $journey = [
+                        new Leg([$this->getTransfer($origin, $connection->getOrigin())]),
+                        new Leg([$connection])
+                    ];
                 }
 
                 $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
@@ -93,8 +98,8 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  TimetableConnection $previousConnection
      * @param  array $legs
      * @param  string $destination
-     * @param  array $journey
-     * @return Connection[]
+     * @param  Leg[] $journey
+     * @return Journey
      * @throws Exception
      */
     private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, $destination, array &$journey) {
@@ -102,16 +107,16 @@ class SchedulePlanner implements JourneyPlanner {
         // if these connections aren't linked, we might need a non-timetable connection to link us
         if ($previousConnection->getDestination() !== $legs[0][0]->getOrigin()) {
             $transfer = $this->getTransfer($previousConnection->getDestination(), $legs[0][0]->getOrigin());
-            $journey[] = $transfer;
+            $journey[] = new Leg([$transfer]);
             $transferTime = $transfer->getDuration();
         }
 
         foreach (array_shift($legs) as $connection) {
             if ($previousConnection->getArrivalTime() + $transferTime + $this->getInterchange($connection->getOrigin()) <= $connection->getDepartureTime()) {
-                $journey[] = $connection;
+                $journey[] = new Leg([$connection]);
 
                 if ($connection->getDestination() === $destination) {
-                    return $journey;
+                    return new Journey($journey);
                 }
                 else {
                     return $this->getJourneyAfter($connection, $legs, $destination, $journey);

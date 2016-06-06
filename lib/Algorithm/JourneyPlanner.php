@@ -2,7 +2,7 @@
 
 namespace JourneyPlanner\Lib\Algorithm;
 
-use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Network\Journey;
 
 interface JourneyPlanner {
 
@@ -10,7 +10,7 @@ interface JourneyPlanner {
      * @param  string $origin
      * @param  string $destination
      * @param  string $departureTime
-     * @return Connection[]
+     * @return Journey[]
      */
-    public function getRoute($origin, $destination, $departureTime);
+    public function getJourneys($origin, $destination, $departureTime);
 }

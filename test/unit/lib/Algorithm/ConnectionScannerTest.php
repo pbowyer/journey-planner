@@ -5,6 +5,8 @@ use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
+use JourneyPlanner\Lib\Network\Journey;
+
 
 class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
@@ -16,8 +18,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $this->assertEquals($timetable, $route);
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expected = [new Journey([new Leg($timetable)])];
+
+        $this->assertEquals($expected, $actual);
     }
 
     public function testJourneyWithEarlyTermination() {
@@ -29,14 +33,16 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLeg = new Leg([
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
             new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
             new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
-        ];
+        ]);
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey([$expectedLeg])];
+
+        $this->assertEquals($expected, $actual);
     }
 
     public function testMultipleRoutes() {
@@ -51,14 +57,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], []);
-        $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [
+        $actual = $scanner->getJourneys("A", "E", 900);
+        $expectedLeg = new Leg([
             new TimetableConnection("A", "C", 1005, 1025, "CS1234"),
             new TimetableConnection("C", "D", 1030, 1100, "CS1234"),
             new TimetableConnection("D", "E", 1105, 1125, "CS1234"),
-        ];
+        ]);
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey([$expectedLeg])];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testNoRoute() {
@@ -70,10 +77,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], []);
-        $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [];
+        $actual = $scanner->getJourneys("A", "E", 900);
+        $expected = [];
 
-        $this->assertEquals($expectedRoute, $route);
+        $this->assertEquals($expected, $actual);
     }
 
     public function testNoRouteBecauseOfMissedConnection() {
@@ -86,10 +93,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], []);
-        $route = $scanner->getRoute("A", "E", 900);
-        $expectedRoute = [];
+        $actual = $scanner->getJourneys("A", "E", 900);
+        $expected = [];
 
-        $this->assertEquals($expectedRoute, $route);
+        $this->assertEquals($expected, $actual);
     }
 
     public function testRouteWithNonTimetabledConnection() {
@@ -108,14 +115,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
-            new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
-            new NonTimetableConnection("B", "C", 5),
-            new TimetableConnection("C", "D", 1030, 1100, "CS1234")
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $legs = [
+            new Leg([new TimetableConnection("A", "B", 1000, 1015, "CS1234")]),
+            new Leg([new NonTimetableConnection("B", "C", 5)]),
+            new Leg([new TimetableConnection("C", "D", 1030, 1100, "CS1234")])
         ];
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey($legs)];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testRouteWithNonTimetabledConnectionThatShouldntBeUsed() {
@@ -134,14 +142,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLeg = new Leg([
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
             new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
             new TimetableConnection("C", "D", 1100, 1115, "CS1234")
-        ];
+        ]);
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey([$expectedLeg])];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testRouteStartingInNonTimetabledConnection() {
@@ -159,14 +168,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
-            new NonTimetableConnection("A", "B", 5),
-            new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
-            new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLegs = [
+            new Leg([new NonTimetableConnection("A", "B", 5)]),
+            new Leg([new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
+                     new TimetableConnection("C", "D", 1100, 1115, "CS1234")]),
         ];
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey($expectedLegs)];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testNonTimetableOnly() {
@@ -184,12 +194,13 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
-        $route = $scanner->getRoute("A", "D", 900);
-        $expectedRoute = [
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLeg = new Leg([
             new NonTimetableConnection("A", "D", 5)
-        ];
+        ]);
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey([$expectedLeg])];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testChangeOfService() {
@@ -206,8 +217,17 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
-        $route = $scanner->getRoute("A", "D", 900);
-        $this->assertEquals($timetable, $route);
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLegs = [
+            new Leg([new TimetableConnection("A", "B", 1000, 1015, "CS1000")]),
+            new Leg([
+                new TimetableConnection("B", "C", 1020, 1045, "CS2000"),
+                new TimetableConnection("C", "D", 1045, 1115, "CS2000"),
+            ])
+        ];
+        
+        $expected = [new Journey($expectedLegs)];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testCantMakeConnectionBecauseOfInterchangeTime() {
@@ -224,7 +244,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
-        $route = $scanner->getRoute("A", "D", 900);
+        $route = $scanner->getJourneys("A", "D", 900);
         $this->assertEquals([], $route);
     }
 
@@ -247,13 +267,14 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
-        $route = $scanner->getRoute("ORP", "LBG", 900);
-        $expectedRoute = [
-            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
-            new NonTimetableConnection("WAE", "LBG", 20),
+        $actual = $scanner->getJourneys("ORP", "LBG", 900);
+        $expectedLegs = [
+            new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000")]),
+            new Leg([new NonTimetableConnection("WAE", "LBG", 20)]),
         ];
 
-        $this->assertEquals($expectedRoute, $route);
+        $expected = [new Journey($expectedLegs)];
+        $this->assertEquals($expected, $actual);
     }
 
     public function testChangeIsFasterThanWalking() {
@@ -274,15 +295,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
-        $route = $scanner->getRoute("ORP", "LBG", 900);
-        $expectedRoute = [
-            new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
-            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000"),
-            new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000"),
+        $actual = $scanner->getJourneys("ORP", "LBG", 900);
+        $expectedLegs = [
+            new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000"),
+                     new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000")]),
+            new Leg([new TimetableConnection("CHX", "LBG", 1050, 1055, "SE2000")]),
         ];
 
-        $this->assertEquals($expectedRoute, $route);
-    }
+        $expected = [new Journey($expectedLegs)];
+        $this->assertEquals($expected, $actual);    }
 
     public function testGetShortestPathTree() {
         $timetable = [
