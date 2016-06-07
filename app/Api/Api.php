@@ -18,6 +18,7 @@ class Api extends Application {
             $this[$key] = $container->raw($key);
         }
 
+        $this["debug"] = true;
         $this->get('/journey-plan', JourneyPlan::class);
     }
 

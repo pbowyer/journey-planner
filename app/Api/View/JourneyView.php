@@ -41,7 +41,7 @@ class JourneyView implements JsonSerializable {
      */
     private function getLeg(Leg $leg) {
         $json = new stdClass;
-        $json->mode = $leg->getMode();
+        $json->mode = strtolower($leg->getMode());
 
         if ($leg->isTransfer()) {
             $json->origin = $leg->getOrigin();
