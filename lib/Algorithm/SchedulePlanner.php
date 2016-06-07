@@ -85,9 +85,9 @@ class SchedulePlanner implements JourneyPlanner {
                 $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
             }
         }
-        finally {
-            return $journeys;
-        }
+        catch (PlanningException $e) {}
+
+        return $journeys;
     }
 
     /**
@@ -100,7 +100,7 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  string $destination
      * @param  Leg[] $journey
      * @return Journey
-     * @throws Exception
+     * @throws PlanningException
      */
     private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, $destination, array &$journey) {
         $transferTime = 0;
@@ -124,7 +124,7 @@ class SchedulePlanner implements JourneyPlanner {
             }
         }
 
-        throw new Exception("Ran out of connections before reaching the destination");
+        throw new PlanningException("Ran out of connections before reaching the destination");
     }
 
     /**
@@ -139,7 +139,7 @@ class SchedulePlanner implements JourneyPlanner {
      * @param  string $origin
      * @param  string $destination
      * @return NonTimetableConnection
-     * @throws Exception
+     * @throws PlanningException
      */
     private function getTransfer($origin, $destination) {
         foreach ($this->nonTimetable[$origin] as $transfer) {
@@ -149,6 +149,6 @@ class SchedulePlanner implements JourneyPlanner {
         }
 
         // need to check the data range too
-        throw new Exception("No connection between {$origin} and {$destination}");
+        throw new PlanningException("No connection between {$origin} and {$destination}");
     }
 }

@@ -14,6 +14,7 @@ use JourneyPlanner\Lib\Network\TransferPatternSchedule;
  * @author Linus Norton <linusnorton@gmail.com>
  */
 class MultiSchedulePlanner implements JourneyPlanner {
+
     /**
      * @var array
      */
