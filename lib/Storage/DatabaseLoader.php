@@ -204,6 +204,9 @@ class DatabaseLoader {
             $previousPattern = $row["transfer_pattern"];
         }
 
+        $legs[] = $connections;
+        $results[] = new TransferPatternSchedule($legs);
+
         return $results;
     }
 }

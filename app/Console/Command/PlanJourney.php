@@ -136,8 +136,8 @@ class PlanJourney extends ConsoleCommand {
             return $scanner->getJourneys($origin, $destination, $time);
         });
 
-        foreach ($results as $route) {
-            $this->displayRoute($out, $locations, $route);
+        foreach ($results as $journey) {
+            $this->displayRoute($out, $locations, $journey);
         }
 
         $this->outputMemoryUsage($out);

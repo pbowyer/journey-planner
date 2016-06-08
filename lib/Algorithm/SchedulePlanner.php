@@ -60,18 +60,14 @@ class SchedulePlanner implements JourneyPlanner {
     public function getJourneys($origin, $destination, $departureTime) {
         $journeys = [];
         $legs = $this->schedule->getLegs();
-
-        if (count($legs) === 1 && $legs[0][0]->getOrigin() === $origin) {
-            return $legs;
-        }
-
+        
         try {
             // create a journey for each connection in the first leg
             foreach (array_shift($legs) as $connection) {
                 if ($connection->getDepartureTime() < $departureTime) {
                     continue;
                 }
-
+                // check we don't need a transfer to get to the origin
                 if ($connection->getOrigin() === $origin) {
                     $journey = [new Leg([$connection])];
                 }
@@ -82,7 +78,13 @@ class SchedulePlanner implements JourneyPlanner {
                     ];
                 }
 
-                $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
+                // if there is only one leg, create the journey and return
+                if ($connection->getDestination() === $destination) {
+                    $journeys[] = new Journey($journey);
+                }
+                else {
+                    $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
+                }
             }
         }
         catch (PlanningException $e) {}
