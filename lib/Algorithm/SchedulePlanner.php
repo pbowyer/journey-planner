@@ -144,6 +144,10 @@ class SchedulePlanner implements JourneyPlanner {
      * @throws PlanningException
      */
     private function getTransfer($origin, $destination) {
+        if (!isset($this->nonTimetable[$origin])) {
+            throw new PlanningException("No connection between {$origin} and {$destination}");
+        }
+
         foreach ($this->nonTimetable[$origin] as $transfer) {
             if ($transfer->getDestination() === $destination) {
                 return $transfer;
