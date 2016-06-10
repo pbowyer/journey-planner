@@ -1,6 +1,7 @@
 <?php
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Network\Connection;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
@@ -126,6 +127,34 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $actual);
     }
 
+    public function testRouteWithNonTimetabledConnectionThatCantBeUsed() {
+        $timetable = [
+            new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
+            new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
+            new TimetableConnection("C", "D", 1030, 1100, "CS1234"),
+            new TimetableConnection("C", "D", 1100, 1115, "CS1234"),
+        ];
+
+        $nonTimetable = [
+            "B" => [
+                new NonTimetableConnection("B", "C", 5, Connection::TUBE, 100, 200),
+                new NonTimetableConnection("B", "E", 5),
+            ]
+        ];
+
+        $scanner = new ConnectionScanner($timetable, $nonTimetable, []);
+        $actual = $scanner->getJourneys("A", "D", 900);
+        $expectedLeg = new Leg([
+            new TimetableConnection("A", "B", 1000, 1015, "CS1234"),
+            new TimetableConnection("B", "C", 1020, 1045, "CS1234"),
+            new TimetableConnection("C", "D", 1100, 1115, "CS1234")
+        ]);
+
+        $expected = [new Journey([$expectedLeg])];
+        $this->assertEquals($expected, $actual);
+    }    
+    
+    
     public function testRouteWithNonTimetabledConnectionThatShouldntBeUsed() {
         $timetable = [
             new TimetableConnection("A", "B", 1000, 1015, "CS1234"),

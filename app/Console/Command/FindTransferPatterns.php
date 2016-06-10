@@ -81,16 +81,12 @@ class FindTransferPatterns extends ConsoleCommand {
             return $this->getTimetables();
         });
 
-        $nonTimetableConnections = $this->outputTask($out, "Loading non-timetable connections", function() {
-            return $this->loader->getNonTimetableConnections();
-        });
-
         $interchange = $this->outputTask($out, "Loading interchange", function() {
             return $this->loader->getInterchangeTimes();
         });
 
         $stations = array_keys($this->loader->getLocations());
-        $persistence = new TransferPatternPersistence($timetables, $nonTimetableConnections, $interchange);
+        $persistence = new TransferPatternPersistence($timetables, $interchange);
 
         $this->outputTask($out, "Clearing previous patterns", function() use ($persistence) {
             $persistence->clearPreviousPatterns(call_user_func($this->dbFactory));
@@ -117,8 +113,13 @@ class FindTransferPatterns extends ConsoleCommand {
         $timetables = [];
 
         foreach (self::DAYS as $day) {
+            $nonTimetableConnections = $this->loader->getNonTimetableConnections(strtotime($day));
+            
             foreach (self::HOURS as $hour) {
-                $timetables["{$day} at {$hour}"] = $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}"));
+                $timetables["{$day} at {$hour}"] = [
+                    "timetable" => $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}")),
+                    "non_timetable" => $nonTimetableConnections
+                ];
             }
         }
 

@@ -20,7 +20,7 @@ class JourneyViewTest extends PHPUnit_Framework_TestCase {
         );
 
         $actual = json_encode($jp);
-        $expected = '{"origin":"PDW","destination":"CST","departureTime":"03:46:40","arrivalTime":"04:03:20","legs":[{"mode":"Train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"Train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]},{"mode":"Walk","origin":"WAE","destination":"LBG","duration":"1 mins"},{"mode":"Train","service":"SE3","callingPoints":[{"station":"LBG","time":"01:17:20"},{"station":"CST","time":"04:03:20"}]}]}';
+        $expected = '{"origin":"PDW","destination":"CST","departureTime":"03:46:40","arrivalTime":"04:03:20","legs":[{"mode":"train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]},{"mode":"walk","origin":"WAE","destination":"LBG","duration":"1 mins"},{"mode":"train","service":"SE3","callingPoints":[{"station":"LBG","time":"01:17:20"},{"station":"CST","time":"04:03:20"}]}]}';
 
         $this->assertEquals($expected, $actual);
     }
@@ -36,7 +36,7 @@ class JourneyViewTest extends PHPUnit_Framework_TestCase {
         );
 
         $actual = json_encode($jp);
-        $expected = '{"origin":"PDW","destination":"LBG","departureTime":"03:46:40","arrivalTime":"03:53:00","legs":[{"mode":"Train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"Train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]},{"mode":"Walk","origin":"WAE","destination":"LBG","duration":"1 mins"}]}';
+        $expected = '{"origin":"PDW","destination":"LBG","departureTime":"03:46:40","arrivalTime":"03:53:00","legs":[{"mode":"train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]},{"mode":"walk","origin":"WAE","destination":"LBG","duration":"1 mins"}]}';
 
         $this->assertEquals($expected, $actual);
     }
@@ -52,7 +52,7 @@ class JourneyViewTest extends PHPUnit_Framework_TestCase {
         );
 
         $actual = json_encode($jp);
-        $expected = '{"origin":"MAR","destination":"WAE","departureTime":"03:45:00","arrivalTime":"03:51:20","legs":[{"mode":"Walk","origin":"MAR","destination":"PDW","duration":"1 mins"},{"mode":"Train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"Train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]}]}';
+        $expected = '{"origin":"MAR","destination":"WAE","departureTime":"03:45:00","arrivalTime":"03:51:20","legs":[{"mode":"walk","origin":"MAR","destination":"PDW","duration":"1 mins"},{"mode":"train","service":"SE1","callingPoints":[{"station":"PDW","time":"03:46:40"},{"station":"TON","time":"03:49:10"}]},{"mode":"train","service":"SE2","callingPoints":[{"station":"TON","time":"03:49:10"},{"station":"SEV","time":"03:50:50"},{"station":"WAE","time":"03:51:20"}]}]}';
 
         $this->assertEquals($expected, $actual);
     }
@@ -65,7 +65,7 @@ class JourneyViewTest extends PHPUnit_Framework_TestCase {
         );
 
         $actual = json_encode($jp);
-        $expected = '{"origin":"MAR","destination":"PDW","departureTime":"01:00:00","arrivalTime":"01:00:00","legs":[{"mode":"Walk","origin":"MAR","destination":"PDW","duration":"1 mins"}]}';
+        $expected = '{"origin":"MAR","destination":"PDW","departureTime":"01:00:00","arrivalTime":"01:00:00","legs":[{"mode":"walk","origin":"MAR","destination":"PDW","duration":"1 mins"}]}';
 
         $this->assertEquals($expected, $actual);
 
@@ -82,7 +82,7 @@ class JourneyViewTest extends PHPUnit_Framework_TestCase {
         );
 
         $actual = json_encode($jp);
-        $expected = '{"origin":"MAR","destination":"WAE","departureTime":"23:11:40","arrivalTime":"04:51:20","legs":[{"mode":"Walk","origin":"MAR","destination":"PDW","duration":"1 mins"},{"mode":"Train","service":"SE1","callingPoints":[{"station":"PDW","time":"23:13:20"},{"station":"TON","time":"23:15:50"}]},{"mode":"Train","service":"SE2","callingPoints":[{"station":"TON","time":"23:15:50"},{"station":"SEV","time":"23:17:30"},{"station":"WAE","time":"04:51:20"}]}]}';
+        $expected = '{"origin":"MAR","destination":"WAE","departureTime":"23:11:40","arrivalTime":"04:51:20","legs":[{"mode":"walk","origin":"MAR","destination":"PDW","duration":"1 mins"},{"mode":"train","service":"SE1","callingPoints":[{"station":"PDW","time":"23:13:20"},{"station":"TON","time":"23:15:50"}]},{"mode":"train","service":"SE2","callingPoints":[{"station":"TON","time":"23:15:50"},{"station":"SEV","time":"23:17:30"},{"station":"WAE","time":"04:51:20"}]}]}';
 
         $this->assertEquals($expected, $actual);
 

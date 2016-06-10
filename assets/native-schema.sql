@@ -51,33 +51,6 @@ CREATE TABLE `shortest_path` (
   PRIMARY KEY (`origin`,`destination`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `non_timetable_connection`;
-CREATE TABLE `non_timetable_connection` (
-  `id` INT(8) unsigned AUTO_INCREMENT,
-  `origin` char(3) NOT NULL,
-  `destination` char(3) NOT NULL,
-  `duration` int(11) unsigned NOT NULL,
-  `mode` VARCHAR(20) NOT NULL,
-  `startTime` TIME NOT NULL,
-  `endTime` TIME NOT NULL,
-  `startDate` DATE NOT NULL,
-  `endDate` DATE NOT NULL,
-  `monday` TINYINT(1) NOT NULL,
-  `tuesday` TINYINT(1) NOT NULL,
-  `wednesday` TINYINT(1) NOT NULL,
-  `thursday` TINYINT(1) NOT NULL,
-  `friday` TINYINT(1) NOT NULL,
-  `saturday` TINYINT(1) NOT NULL,
-  `sunday` TINYINT(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `origin` (`origin`),
-  KEY `destination` (`destination`),
-  KEY `startDate` (`startDate`),
-  KEY `endDate` (`endDate`),
-  KEY `startTime` (`startTime`),
-  KEY `endTime` (`endTime`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS `interchange`;
 CREATE TABLE `interchange` (
   `station` char(3) NOT NULL,

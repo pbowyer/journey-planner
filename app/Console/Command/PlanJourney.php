@@ -86,8 +86,8 @@ class PlanJourney extends ConsoleCommand {
             return $this->loader->getUnprunedTimetableConnections($targetTime);
         });
 
-        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () {
-            return $this->loader->getNonTimetableConnections();
+        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {
+            return $this->loader->getNonTimetableConnections($targetTime);
         });
 
         $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {
@@ -117,8 +117,8 @@ class PlanJourney extends ConsoleCommand {
             return $this->loader->getScheduleFromTransferPattern($origin, $destination, $targetTime);
         });
 
-        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () {
-            return $this->loader->getNonTimetableConnections();
+        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {
+            return $this->loader->getNonTimetableConnections($targetTime);
         });
 
         $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {

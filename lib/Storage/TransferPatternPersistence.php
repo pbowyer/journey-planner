@@ -20,23 +20,16 @@ class TransferPatternPersistence {
     private $timetables;
 
     /**
-     * @var NonTimetableConnection[]
-     */
-    private $nonTimetableConnections;
-
-    /**
      * @var array
      */
     private $interchange;
 
     /**
      * @param array $timetables
-     * @param NonTimetableConnection[] $nonTimetableConnections
      * @param array $interchange
      */
-    public function __construct(array $timetables, array $nonTimetableConnections, array $interchange) {
+    public function __construct(array $timetables, array $interchange) {
         $this->timetables = $timetables;
-        $this->nonTimetableConnections = $nonTimetableConnections;
         $this->interchange = $interchange;
     }
 
@@ -58,8 +51,8 @@ class TransferPatternPersistence {
         $insertLeg = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $patternsFound = [];
 
-        foreach ($this->timetables as $time => $timetable) {
-            $treeBuilder = new ConnectionScanner($timetable, $this->nonTimetableConnections, $this->interchange);
+        foreach ($this->timetables as $time => list($timetable, $nonTimetable)) {
+            $treeBuilder = new ConnectionScanner($timetable, $nonTimetable, $this->interchange);
             $tree = $treeBuilder->getShortestPathTree($station);
 
             /** @var TransferPattern $pattern */

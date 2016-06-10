@@ -23,7 +23,7 @@ class JourneyPlan {
         $targetTime = strtotime($request->get('date'));
 
         $schedules = $app['loader.database']->getScheduleFromTransferPattern($origin, $destination, $targetTime);
-        $nonTimetableConnections = $app['loader.database']->getNonTimetableConnections();
+        $nonTimetableConnections = $app['loader.database']->getNonTimetableConnections($targetTime);
         $interchangeTimes = $app['loader.database']->getInterchangeTimes();
         $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
         $journeys = $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));

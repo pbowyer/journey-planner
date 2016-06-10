@@ -96,7 +96,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      */
     private function getConnections($startStation, $finalDestination) {
         // check for non timetable connections at the origin station
-        $this->checkForBetterNonTimetableConnections($startStation);
+        $this->checkForBetterNonTimetableConnections($startStation, $this->arrivals[$startStation]);
         $seenDestination = false;
 
         foreach ($this->timetable as $connection) {
@@ -104,7 +104,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
                 $this->connections[$connection->getDestination()] = $connection;
                 $this->arrivals[$connection->getDestination()] = $connection->getArrivalTime();
 
-                $this->checkForBetterNonTimetableConnections($connection->getDestination());
+                $this->checkForBetterNonTimetableConnections($connection->getDestination(), $connection->getArrivalTime());
                 $seenDestination = $seenDestination || $connection->getDestination() === $finalDestination;
             }
 
@@ -141,13 +141,14 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      *
      * @param string $origin
      */
-    private function checkForBetterNonTimetableConnections($origin) {
+    private function checkForBetterNonTimetableConnections($origin, $time) {
         // check if there is a non timetable connection starting at the destination, and process it's connections
         if (isset($this->nonTimetable[$origin])) {
             foreach ($this->nonTimetable[$origin] as $connection) {
-                $thisConnectionIsBetter = !isset($this->arrivals[$connection->getDestination()]) || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
+                $noExistingConnection = !isset($this->arrivals[$connection->getDestination()]);
+                $thisConnectionIsBetter = $noExistingConnection || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
 
-                if ($thisConnectionIsBetter) {
+                if ($connection->isAvailableAt($time) && $thisConnectionIsBetter) {
                     $this->connections[$connection->getDestination()] = $connection;
                     $this->arrivals[$connection->getDestination()] = $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
                 }
@@ -221,14 +222,14 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      */
     private function getAllConnections($startStation) {
         // check for non timetable connections at the origin station
-        $this->checkForBetterNonTimetableConnections($startStation);
+        $this->checkForBetterNonTimetableConnections($startStation, 0);
 
         foreach ($this->timetable as $connection) {
             if ($this->canGetToThisConnection($connection) && $this->thisConnectionIsBetter($connection)) {
                 $this->connections[$connection->getDestination()] = $connection;
                 $this->arrivals[$connection->getDestination()] = $connection->getArrivalTime();
 
-                $this->checkForBetterNonTimetableConnections($connection->getDestination());
+                $this->checkForBetterNonTimetableConnections($connection->getDestination(), $connection->getArrivalTime());
             }
         }
     }

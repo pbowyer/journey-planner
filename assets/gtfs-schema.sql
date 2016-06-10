@@ -124,7 +124,14 @@ CREATE TABLE `links` (
     KEY `start_time` (start_time),
     KEY `end_time` (end_time),
     KEY `start_date` (start_date),
-    KEY `end_date` (end_date)
+    KEY `end_date` (end_date),
+    KEY `monday` (`monday`),
+    KEY `tuesday` (`tuesday`),
+    KEY `wednesday` (`wednesday`),
+    KEY `thursday` (`thursday`),
+    KEY `friday` (`friday`),
+    KEY `saturday` (`saturday`),
+    KEY `sunday` (`sunday`)
 );
 
 DROP TABLE IF EXISTS `routes`;

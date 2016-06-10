@@ -94,10 +94,30 @@ class DatabaseLoader {
     }
 
     /**
+     * @param int $targetTimestamp
      * @return NonTimetableConnection[]
      */
-    public function getNonTimetableConnections() {
-        $stmt = $this->db->query("SELECT origin, destination, duration, mode FROM non_timetable_connection");
+    public function getNonTimetableConnections($targetTimestamp) {
+        $dow = lcfirst(date('l', $targetTimestamp));
+
+        $stmt = $this->db->prepare("
+            SELECT 
+                from_stop_id as origin, 
+                to_stop_id as destination, 
+                link_secs as duration, 
+                mode, 
+                TIME_TO_SEC(start_time) as startTime,
+                TIME_TO_SEC(end_time) as endTime,
+            FROM links
+            WHERE start_date <= :targetDate AND end_date >= :targetDate
+            AND {$dow} = 1
+
+        ");
+
+        $stmt->execute([
+            "targetDate" => date("Y-m-d", $targetTimestamp)
+        ]);
+
         $results = [];
 
         foreach ($stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\NonTimetableConnection', ['','','','','']) as $c) {
