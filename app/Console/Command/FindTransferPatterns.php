@@ -114,7 +114,7 @@ class FindTransferPatterns extends ConsoleCommand {
 
         foreach (self::DAYS as $day) {
             $nonTimetableConnections = $this->loader->getNonTimetableConnections(strtotime($day));
-            
+
             foreach (self::HOURS as $hour) {
                 $timetables["{$day} at {$hour}"] = [
                     "timetable" => $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}")),

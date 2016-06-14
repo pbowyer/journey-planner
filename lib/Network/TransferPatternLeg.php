@@ -5,25 +5,31 @@ namespace JourneyPlanner\Lib\Network;
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class TransferPatternSchedule {
-
+class TransferPatternLeg {
     /**
-     * @var TransferPatternLeg[]
+     * @var Leg[]
      */
     private $legs;
 
     /**
-     * @param TransferPatternLeg[] $legs
+     * @param array $legs
      */
     public function __construct(array $legs) {
         $this->legs = $legs;
     }
 
     /**
-     * @return TransferPatternLeg[]
+     * @return Leg[]
      */
-    public function getTransferLegs() {
+    public function getLegs() {
         return $this->legs;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrigin() {
+        return $this->legs[0]->getOrigin();
     }
     
 }

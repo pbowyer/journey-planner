@@ -59,31 +59,31 @@ class SchedulePlanner implements JourneyPlanner {
      */
     public function getJourneys($origin, $destination, $departureTime) {
         $journeys = [];
-        $legs = $this->schedule->getLegs();
-        
+        $transferLegs = $this->schedule->getTransferLegs();
+        $transferLeg = array_shift($transferLegs);
+
         try {
             // create a journey for each connection in the first leg
-            foreach (array_shift($legs) as $connection) {
-                if ($connection->getDepartureTime() < $departureTime) {
+            /** @var Leg $leg */
+            foreach ($transferLeg->getLegs() as $leg) {
+                if ($leg->getDepartureTime() < $departureTime) {
                     continue;
                 }
-                // check we don't need a transfer to get to the origin
-                if ($connection->getOrigin() === $origin) {
-                    $journey = [new Leg([$connection])];
-                }
-                else {
-                    $journey = [
-                        new Leg([$this->getTransfer($origin, $connection->getOrigin())]),
-                        new Leg([$connection])
-                    ];
-                }
 
-                // if there is only one leg, create the journey and return
-                if ($connection->getDestination() === $destination) {
-                    $journeys[] = new Journey($journey);
+                // check if we need a transfer to get to the origin
+                if ($leg->getOrigin() !== $origin) {
+                    $legs = [$this->getTransfer($origin, $leg->getOrigin()), $leg];
                 }
                 else {
-                    $journeys[] = $this->getJourneyAfter($connection, $legs, $destination, $journey);
+                    $legs = [$leg];
+                }
+                
+                // if there is only one leg, create the journey and return
+                if ($leg->getDestination() === $destination) {
+                    $journeys[] = new Journey($legs);
+                }
+                else {
+                    $journeys[] = $this->getJourneyAfter($leg, $transferLegs, $destination, $legs);
                 }
             }
         }
@@ -97,31 +97,33 @@ class SchedulePlanner implements JourneyPlanner {
      *
      * Once found the method calls itself again to do the next leg until there are no more legs left.
      *
-     * @param  TimetableConnection $previousConnection
-     * @param  array $legs
+     * @param  Leg $previousLeg
+     * @param  TransferPatternLeg[] $transferLegs
      * @param  string $destination
-     * @param  Leg[] $journey
+     * @param  Leg[] $legs
      * @return Journey
      * @throws PlanningException
      */
-    private function getJourneyAfter(TimetableConnection $previousConnection, array $legs, $destination, array &$journey) {
+    private function getJourneyAfter(Leg $previousLeg, array $transferLegs, $destination, array &$legs) {
         $transferTime = 0;
+        $currentTransferLeg = array_shift($transferLegs);
+        
         // if these connections aren't linked, we might need a non-timetable connection to link us
-        if ($previousConnection->getDestination() !== $legs[0][0]->getOrigin()) {
-            $transfer = $this->getTransfer($previousConnection->getDestination(), $legs[0][0]->getOrigin());
-            $journey[] = new Leg([$transfer]);
+        if ($previousLeg->getDestination() !== $currentTransferLeg->getOrigin()) {
+            $transfer = $this->getTransfer($previousLeg->getDestination(), $currentTransferLeg->getOrigin());
+            $legs[] = $transfer;
             $transferTime = $transfer->getDuration();
         }
 
-        foreach (array_shift($legs) as $connection) {
-            if ($previousConnection->getArrivalTime() + $transferTime + $this->getInterchange($connection->getOrigin()) <= $connection->getDepartureTime()) {
-                $journey[] = new Leg([$connection]);
+        foreach ($currentTransferLeg->getLegs() as $leg) {
+            if ($previousLeg->getArrivalTime() + $transferTime + $this->getInterchange($leg->getOrigin()) <= $leg->getDepartureTime()) {
+                $legs[] = $leg;
 
-                if ($connection->getDestination() === $destination) {
-                    return new Journey($journey);
+                if ($leg->getDestination() === $destination) {
+                    return new Journey($legs);
                 }
                 else {
-                    return $this->getJourneyAfter($connection, $legs, $destination, $journey);
+                    return $this->getJourneyAfter($leg, $transferLegs, $destination, $legs);
                 }
             }
         }
@@ -140,7 +142,7 @@ class SchedulePlanner implements JourneyPlanner {
     /**
      * @param  string $origin
      * @param  string $destination
-     * @return NonTimetableConnection
+     * @return Leg
      * @throws PlanningException
      */
     private function getTransfer($origin, $destination) {
@@ -150,7 +152,7 @@ class SchedulePlanner implements JourneyPlanner {
 
         foreach ($this->nonTimetable[$origin] as $transfer) {
             if ($transfer->getDestination() === $destination) {
-                return $transfer;
+                return new Leg([$transfer]);
             }
         }
 

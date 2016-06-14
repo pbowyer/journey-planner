@@ -51,8 +51,8 @@ class TransferPatternPersistence {
         $insertLeg = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $patternsFound = [];
 
-        foreach ($this->timetables as $time => list($timetable, $nonTimetable)) {
-            $treeBuilder = new ConnectionScanner($timetable, $nonTimetable, $this->interchange);
+        foreach ($this->timetables as $time => $timetables) {
+            $treeBuilder = new ConnectionScanner($timetables["timetable"], $timetables["non_timetable"], $this->interchange);
             $tree = $treeBuilder->getShortestPathTree($station);
 
             /** @var TransferPattern $pattern */

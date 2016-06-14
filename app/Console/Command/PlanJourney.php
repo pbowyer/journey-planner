@@ -153,17 +153,21 @@ class PlanJourney extends ConsoleCommand {
         $this->outputHeading($out, "Route");
 
         foreach ($journey->getLegs() as $leg) {
-            $origin = sprintf('%-30s', $locations[$leg->getOrigin()]);
-            $destination = sprintf('%30s', $locations[$leg->getDestination()]);
 
             if (!$leg->isTransfer()) {
-                $out->writeln(
-                    date('H:i', $leg->getFirstConnection()->getDepartureTime()).' '.$origin.' '.
-                    sprintf('%-6s', $leg->getFirstConnection()->getService()).' '.
-                    $destination.' '.date('H:i', $leg->getLastConnection()->getArrivalTime())
-                );
+                foreach ($leg->getConnections() as $connection) {
+                    $origin = sprintf('%-30s', $locations[$connection->getOrigin()]);
+                    $destination = sprintf('%30s', $locations[$connection->getDestination()]);
+                    $out->writeln(
+                        date('H:i', $connection->getDepartureTime()).' '.$origin.' '.
+                        sprintf('%-6s', $connection->getService()).' '.
+                        $destination.' '.date('H:i', $connection->getArrivalTime())
+                    );
+                }
             }
             else {
+                $origin = sprintf('%-30s', $locations[$leg->getOrigin()]);
+                $destination = sprintf('%30s', $locations[$leg->getDestination()]);
                 $out->writeln(
                     sprintf('%-6s', $leg->getMode()).
                     $origin.

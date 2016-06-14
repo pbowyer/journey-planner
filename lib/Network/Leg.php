@@ -45,7 +45,7 @@ class Leg extends Connection {
             return $this->connections[0]->getDuration();
         }
         else {
-            return end($this->connections)->getArrivalTime() - $this->connections[0]->getDepartureTime();
+            return $this->getArrivalTime() - $this->getDepartureTime();
         }
     }
 
@@ -64,17 +64,17 @@ class Leg extends Connection {
     }
 
     /**
-     * @return Connection
+     * @return int
      */
-    public function getFirstConnection() {
-        return $this->connections[0];
+    public function getDepartureTime() {
+        return $this->connections[0]->getDepartureTime();
     }
 
     /**
-     * @return Conection
+     * @return int
      */
-    public function getLastConnection() {
-        return end($this->connections);
+    public function getArrivalTime() {
+        return end($this->connections)->getArrivalTime();
     }
 
     /**
@@ -82,5 +82,12 @@ class Leg extends Connection {
      */
     public function getConnections() {
         return $this->connections;
+    }
+
+    /**
+     * @return string
+     */
+    public function getService() {
+        return $this->connections[0]->getService();
     }
 }

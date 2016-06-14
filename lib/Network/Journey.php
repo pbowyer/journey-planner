@@ -49,7 +49,7 @@ class Journey {
                 $transferDuration += $leg->getDuration();
             }
             else {
-                return $leg->getFirstConnection()->getDepartureTime() - $transferDuration;
+                return $leg->getDepartureTime() - $transferDuration;
             }
         }
     }
@@ -65,7 +65,7 @@ class Journey {
                 $transferDuration += $this->legs[$i]->getDuration();
             }
             else {
-                return $this->legs[$i]->getLastConnection()->getArrivalTime() + $transferDuration;
+                return $this->legs[$i]->getArrivalTime() + $transferDuration;
             }
         }
     }

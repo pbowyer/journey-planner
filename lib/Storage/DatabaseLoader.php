@@ -2,11 +2,14 @@
 
 namespace JourneyPlanner\Lib\Storage;
 
+use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
+use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 use PDO;
+use PDOStatement;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
@@ -107,7 +110,7 @@ class DatabaseLoader {
                 link_secs as duration, 
                 mode, 
                 TIME_TO_SEC(start_time) as startTime,
-                TIME_TO_SEC(end_time) as endTime,
+                TIME_TO_SEC(end_time) as endTime
             FROM links
             WHERE start_date <= :targetDate AND end_date >= :targetDate
             AND {$dow} = 1
@@ -164,20 +167,19 @@ class DatabaseLoader {
      * @param  string $origin
      * @param  string $destination
      * @param  int $startTimestamp
-     * @return TransferPattern[]
+     * @return TransferPatternSchedule[]
      */
     public function getScheduleFromTransferPattern($origin, $destination, $startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
-            SELECT 
-              leg.transfer_pattern, 
-              leg.id, 
-              dept.trip_id, 
-              ostation.parent_station as origin, 
-              TIME_TO_SEC(dept.departure_time) as departureTime, 
-              dstation.parent_station as destination, 
-              TIME_TO_SEC(arrv.arrival_time) as arrivalTime
+            SELECT
+              leg.transfer_pattern as transfer_pattern,
+              leg.id as transfer_leg,
+              train_uid as service,
+              cstation.parent_station as station,
+              TIME_TO_SEC(calling.arrival_time) as arrivalTime,
+              TIME_TO_SEC(calling.departure_time) as departureTime
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             JOIN stops ostation ON ostation.parent_station = leg.origin
@@ -186,13 +188,15 @@ class DatabaseLoader {
             JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = dstation.stop_id
             JOIN trips on dept.trip_id = trips.trip_id
             JOIN calendar USING(service_id)
+            JOIN stop_times as calling ON dept.trip_id = calling.trip_id AND calling.stop_sequence >= dept.stop_sequence AND calling.stop_sequence <= arrv.stop_sequence
+            JOIN stops cstation ON cstation.stop_id = calling.stop_id   
             WHERE arrv.stop_sequence > dept.stop_sequence
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
             AND dept.departure_time >= SEC_TO_TIME(:departureTime)
             AND start_date <= :startDate AND end_date >= :startDate
             AND {$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, dept.departure_time
+            ORDER BY leg.transfer_pattern, leg.id, calling.trip_id, calling.stop_sequence
         ");
 
         $stmt->execute([
@@ -202,31 +206,10 @@ class DatabaseLoader {
             'destination' => $destination
         ]);
 
-        $results = [];
-        $previousLeg = null;
-        $previousPattern = null;
-        $legs = [];
-        $connections = [];
+        $factory = new TransferPatternScheduleFactory();
 
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if ($previousLeg && $previousLeg !== $row["id"]) {
-                $legs[] = $connections;
-                $connections = [];
-            }
-
-            if ($previousPattern && $previousPattern !== $row["transfer_pattern"]) {
-                $results[] = new TransferPatternSchedule($legs);
-                $legs = [];
-            }
-
-            $connections[] = new TimetableConnection($row["origin"], $row["destination"], $row["departureTime"], $row["arrivalTime"], $row["trip_id"]);
-            $previousLeg = $row["id"];
-            $previousPattern = $row["transfer_pattern"];
-        }
-
-        $legs[] = $connections;
-        $results[] = new TransferPatternSchedule($legs);
-
-        return $results;
+        return $factory->getSchedules($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+    
+
 }

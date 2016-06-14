@@ -51,9 +51,9 @@ class JourneyView implements JsonSerializable {
             return $json;
         }
 
-        $json->service = $leg->getFirstConnection()->getService();
+        $json->service = $leg->getService();
         $json->callingPoints = [
-            $this->getCallingPoint($leg->getOrigin(), $leg->getFirstConnection()->getDepartureTime())
+            $this->getCallingPoint($leg->getOrigin(), $leg->getDepartureTime())
         ];
 
         foreach ($leg->getConnections() as $c) {
