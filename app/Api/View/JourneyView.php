@@ -76,7 +76,7 @@ class JourneyView implements JsonSerializable {
      * @return string
      */
     private function getTime($time) {
-        return date("H:i:s", $time % 86400);
+        return date("H:i", $time % 86400);
     }
 
     /**

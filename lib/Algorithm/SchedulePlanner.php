@@ -72,7 +72,7 @@ class SchedulePlanner implements JourneyPlanner {
 
                 // check if we need a transfer to get to the origin
                 if ($leg->getOrigin() !== $origin) {
-                    $legs = [$this->getTransfer($origin, $leg->getOrigin()), $leg];
+                    $legs = [$this->getTransfer($origin, $leg->getOrigin(), $departureTime), $leg];
                 }
                 else {
                     $legs = [$leg];
@@ -107,10 +107,17 @@ class SchedulePlanner implements JourneyPlanner {
     private function getJourneyAfter(Leg $previousLeg, array $transferLegs, $destination, array &$legs) {
         $transferTime = 0;
         $currentTransferLeg = array_shift($transferLegs);
-        
+
+        // if we've run out of legs to scan maybe there is a transfer at the end
+        if ($currentTransferLeg === null) {
+            $legs[] = $this->getTransfer($previousLeg->getDestination(), $destination, $previousLeg->getArrivalTime());
+            
+            return new Journey($legs);
+        }
+
         // if these connections aren't linked, we might need a non-timetable connection to link us
         if ($previousLeg->getDestination() !== $currentTransferLeg->getOrigin()) {
-            $transfer = $this->getTransfer($previousLeg->getDestination(), $currentTransferLeg->getOrigin());
+            $transfer = $this->getTransfer($previousLeg->getDestination(), $currentTransferLeg->getOrigin(), $previousLeg->getArrivalTime());
             $legs[] = $transfer;
             $transferTime = $transfer->getDuration();
         }
@@ -142,16 +149,17 @@ class SchedulePlanner implements JourneyPlanner {
     /**
      * @param  string $origin
      * @param  string $destination
+     * @param  int $time
      * @return Leg
      * @throws PlanningException
      */
-    private function getTransfer($origin, $destination) {
+    private function getTransfer($origin, $destination, $time) {
         if (!isset($this->nonTimetable[$origin])) {
             throw new PlanningException("No connection between {$origin} and {$destination}");
         }
 
         foreach ($this->nonTimetable[$origin] as $transfer) {
-            if ($transfer->getDestination() === $destination) {
+            if ($transfer->getDestination() === $destination && $transfer->isAvailableAt($time)) {
                 return new Leg([$transfer]);
             }
         }

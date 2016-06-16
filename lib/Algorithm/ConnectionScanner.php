@@ -140,6 +140,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * is set.
      *
      * @param string $origin
+     * @param int $time
      */
     private function checkForBetterNonTimetableConnections($origin, $time) {
         // check if there is a non timetable connection starting at the destination, and process it's connections
