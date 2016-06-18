@@ -17,10 +17,16 @@ class FindTransferPatterns extends ConsoleCommand {
         "next friday",
         "next saturday",
         "next sunday",
+        "next monday + 1 month",
+        "next friday + 1 month",
+        "next saturday + 1 month",
+        "next sunday + 1 month",
     ];
 
     const HOURS = [
+        "05:00",
         "07:00",
+        "12:00",
         "17:00",
         "22:00",
     ];

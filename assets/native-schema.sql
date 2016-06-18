@@ -61,8 +61,8 @@ CREATE TABLE `interchange` (
 DROP TABLE IF EXISTS `transfer_pattern`;
 CREATE TABLE `transfer_pattern` (
   `id` INT(12) unsigned AUTO_INCREMENT,
-  `origin` char(12) NOT NULL,
-  `destination` char(12) NOT NULL,
+  `origin` char(3) NOT NULL,
+  `destination` char(3) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `origin` (`origin`),
   KEY `destination` (`destination`)
@@ -72,8 +72,8 @@ DROP TABLE IF EXISTS `transfer_pattern_leg`;
 CREATE TABLE `transfer_pattern_leg` (
   `id` INT(12) unsigned AUTO_INCREMENT,
   `transfer_pattern` INT(12) unsigned NOT NULL,
-  `origin` char(12) NOT NULL,
-  `destination` char(12) NOT NULL,
+  `origin` char(3) NOT NULL,
+  `destination` char(3) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `transfer_pattern` (`transfer_pattern`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

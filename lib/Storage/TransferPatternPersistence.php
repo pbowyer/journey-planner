@@ -47,8 +47,11 @@ class TransferPatternPersistence {
      * @param string $station
      */
     public function calculateTransferPatternsForStation(PDO $db, $station) {
+        $db->exec("SET UNIQUE_CHECKS = 0");
+        $db->beginTransaction();
+
         $insertPattern = $db->prepare("INSERT INTO transfer_pattern VALUES (null, ?, ?)");
-        $insertLeg = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
+        $insertLegSQL = "INSERT INTO transfer_pattern_leg VALUES ";
         $patternsFound = [];
 
         foreach ($this->timetables as $time => $timetables) {
@@ -57,6 +60,7 @@ class TransferPatternPersistence {
 
             /** @var TransferPattern $pattern */
             foreach ($tree as $destination => $pattern) {
+                $legs = [];
                 $hash = $pattern->getHash();
 
                 // only store unique transfer patterns
@@ -71,10 +75,14 @@ class TransferPatternPersistence {
                 foreach ($pattern->getLegs() as $leg) {
                     // NonTimetableConnections are not stored in the transfer patterns
                     if (!$leg->isTransfer()) {
-                        $insertLeg->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
+                        $legs[] = "(null,".join(",",[$patternId, '"'.$leg->getOrigin().'"', '"'.$leg->getDestination().'"']).")";
                     }
                 }
+
+                $db->exec($insertLegSQL.join(",", $legs));
             }
         }
+
+        $db->commit();
     }
 }
