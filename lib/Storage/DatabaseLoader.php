@@ -181,13 +181,13 @@ class DatabaseLoader {
               TIME_TO_SEC(calling.arrival_time) as arrivalTime,
               TIME_TO_SEC(calling.departure_time) as departureTime
             FROM transfer_pattern
-            JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
-            JOIN stops ostation ON ostation.parent_station = leg.origin
-            JOIN stops dstation ON dstation.parent_station = leg.destination
-            JOIN stop_times as dept ON dept.stop_id = ostation.stop_id
+            STRAIGHT_JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern            
+            STRAIGHT_JOIN stops ostation FORCE INDEX FOR JOIN (`parent_station`) ON ostation.parent_station = leg.origin             
+            STRAIGHT_JOIN stops dstation FORCE INDEX FOR JOIN (`parent_station`) ON dstation.parent_station = leg.destination             
+            STRAIGHT_JOIN stop_times as dept FORCE INDEX FOR JOIN (`stop_id`) ON dept.stop_id = ostation.stop_id             
             JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = dstation.stop_id
             JOIN trips on dept.trip_id = trips.trip_id
-            JOIN calendar USING(service_id)
+            JOIN calendar FORCE INDEX FOR JOIN(`service_id`) USING(service_id)
             JOIN stop_times as calling ON dept.trip_id = calling.trip_id AND calling.stop_sequence >= dept.stop_sequence AND calling.stop_sequence <= arrv.stop_sequence
             JOIN stops cstation ON cstation.stop_id = calling.stop_id   
             WHERE arrv.stop_sequence > dept.stop_sequence
