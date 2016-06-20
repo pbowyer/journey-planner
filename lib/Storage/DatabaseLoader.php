@@ -240,7 +240,7 @@ class DatabaseLoader {
             AND dept.departureTime >= SEC_TO_TIME(:departureTime)
             AND dept.startDate <= :startDate AND dept.endDate >= :startDate
             AND dept.{$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, tt.service, tt.departureTime
+            ORDER BY leg.transfer_pattern, leg.id, dept.departureTime, tt.service, tt.departureTime
         ");
 
         $stmt->execute([

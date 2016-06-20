@@ -66,8 +66,8 @@ class PlanJourney extends ConsoleCommand {
             $date = time();
         }
 
-        //$this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
-        $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        $this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        //$this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
 
         return 0;
     }
