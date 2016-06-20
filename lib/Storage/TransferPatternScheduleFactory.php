@@ -73,4 +73,51 @@ class TransferPatternScheduleFactory {
         return $patterns;
     }
 
+    public function getSchedulesFromTimetable(array $rows) {
+        $connections = [];
+        $legs = [];
+        $transferLegs = [];
+        $patterns = [];
+
+        $prevLeg = null;
+        $prevTransferLeg = null;
+        $prevPattern = null;
+
+        foreach ($rows as $row) {
+            if ($prevLeg && $prevLeg !== $row["service"]) {
+                $legs[] = new Leg($connections);
+                $connections = [];
+            }
+
+            $connections[] = new TimetableConnection(
+                $row["origin"],
+                $row["destination"],
+                $row["departureTime"],
+                $row["arrivalTime"],
+                $row["service"]
+            );
+
+            if ($prevTransferLeg && $prevTransferLeg !== $row["transfer_leg"]) {
+                $transferLegs[] = new TransferPatternLeg($legs);
+                $legs = [];
+            }
+
+            if ($prevPattern && $prevPattern !== $row["transfer_pattern"]) {
+                $patterns[] = new TransferPatternSchedule($transferLegs);
+                $transferLegs = [];
+            }
+
+            $prevLeg = $row["service"];
+            $prevTransferLeg = $row["transfer_leg"];
+            $prevPattern = $row["transfer_pattern"];
+        }
+
+        $legs[] = new Leg($connections);
+        $transferLegs[] = new TransferPatternLeg($legs);
+        $patterns[] = new TransferPatternSchedule($transferLegs);
+
+        return $patterns;
+    }
+    
+    
 }

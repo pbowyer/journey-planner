@@ -110,7 +110,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
             // if this connection departs after the earliest arrival at the destination no connection
             // after will ever be faster so we can just return
-            if ($seenDestination && $connection->getDepartureTime() > $this->arrivals[$connection->getDestination()]) {
+            if ($seenDestination && $connection->getDepartureTime() > $this->arrivals[$finalDestination]) {
                 return;
             }
         }

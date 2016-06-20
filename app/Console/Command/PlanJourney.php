@@ -66,8 +66,8 @@ class PlanJourney extends ConsoleCommand {
             $date = time();
         }
 
-        $this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
-        //$this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        //$this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
 
         return 0;
     }
@@ -82,7 +82,6 @@ class PlanJourney extends ConsoleCommand {
         $this->outputHeading($out, "Journey Planner");
 
         $timetableConnections = $this->outputTask($out, "Loading timetable", function () use ($targetTime, $origin) {
-            //return $this->loader->getTimetableConnections($targetTime, $origin);
             return $this->loader->getUnprunedTimetableConnections($targetTime);
         });
 
@@ -104,7 +103,7 @@ class PlanJourney extends ConsoleCommand {
             return $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
         });
 
-        $this->displayRoute($out, $locations, $route);
+        $this->displayRoute($out, $locations, $route[0]);
 
         $this->outputMemoryUsage($out);
         $out->writeln("Connections: ".count($timetableConnections));
@@ -114,7 +113,7 @@ class PlanJourney extends ConsoleCommand {
         $this->outputHeading($out, "Journey Planner");
 
         $schedules = $this->outputTask($out, "Loading schedules", function () use ($targetTime, $origin, $destination) {
-            return $this->loader->getScheduleFromTransferPattern($origin, $destination, $targetTime);
+            return $this->loader->getScheduleFromTransferPatternTimetable($origin, $destination, $targetTime);
         });
 
         $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {
