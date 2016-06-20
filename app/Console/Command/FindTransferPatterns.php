@@ -103,8 +103,16 @@ class FindTransferPatterns extends ConsoleCommand {
                 $persistence->calculateTransferPatternsForStation(call_user_func($this->dbFactory), $station);
             };
 
+            $db = call_user_func($this->dbFactory);
+            $db->exec("ALTER TABLE transfer_pattern DROP KEY origin");
+            $db->exec("ALTER TABLE transfer_pattern DROP KEY destination");
+
             $this->processManager->process($stations, $callable, $this->forkStrategy);
             $this->processManager->wait();
+
+            $db = call_user_func($this->dbFactory);
+            $db->exec("ALTER TABLE transfer_pattern ADD KEY origin (origin)");
+            $db->exec("ALTER TABLE transfer_pattern ADD KEY destination (destination)");
         });
 
         $this->outputMemoryUsage($out);
