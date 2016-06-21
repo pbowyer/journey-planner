@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\App\Api\View;
 
+use DateInterval;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\Journey;
 use JsonSerializable;
@@ -46,7 +47,7 @@ class JourneyView implements JsonSerializable {
         if ($leg->isTransfer()) {
             $json->origin = $leg->getOrigin();
             $json->destination = $leg->getDestination();
-            $json->duration = $this->getDuration($leg->getDuration());
+            $json->duration = $this->getTime($leg->getDuration());
 
             return $json;
         }
@@ -76,15 +77,7 @@ class JourneyView implements JsonSerializable {
      * @return string
      */
     private function getTime($time) {
-        return date("H:i", $time % 86400);
-    }
-
-    /**
-     * @param  int $time
-     * @return string
-     */
-    private function getDuration($time) {
-        return intval(date("i", $time)). " mins";
+        return gmdate("H:i", $time % 86400);
     }
 
 }

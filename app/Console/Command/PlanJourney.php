@@ -2,14 +2,13 @@
 
 namespace JourneyPlanner\App\Console\Command;
 
+use JourneyPlanner\Lib\Algorithm\Filter\SlowJourneyFilter;
 use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
-use JourneyPlanner\Lib\Algorithm\SchedulePlanner;
 use JourneyPlanner\Lib\Network\Journey;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
-use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
 
 class PlanJourney extends ConsoleCommand {
@@ -131,8 +130,10 @@ class PlanJourney extends ConsoleCommand {
         $results = $this->outputTask($out, "Plan journeys", function () use ($schedules, $nonTimetableConnections, $interchangeTimes, $targetTime, $origin, $destination) {
             $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
             $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
+            $results = $scanner->getJourneys($origin, $destination, $time);
+            $filter = new SlowJourneyFilter();
 
-            return $scanner->getJourneys($origin, $destination, $time);
+            return $filter->filter($results);
         });
 
         foreach ($results as $journey) {
