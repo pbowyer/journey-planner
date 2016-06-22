@@ -36,10 +36,19 @@ class SlowJourneyFilter implements JourneyFilter {
             }
         }
 
-        return array_filter($results, function(Journey $j) use ($earliestArrivals, $latestDepartures) {
-            return $earliestArrivals[$j->getDepartureTime()] === $j->getArrivalTime() &&
-            $latestDepartures[$j->getArrivalTime()] === $j->getDepartureTime();
-        });
+        $journeys = [];
+
+        foreach ($results as $j) {
+            $hash = $j->getDepartureTime().$j->getArrivalTime();
+
+            if (!isset($journeys[$hash]) &&
+                $earliestArrivals[$j->getDepartureTime()] === $j->getArrivalTime() &&
+                $latestDepartures[$j->getArrivalTime()] === $j->getDepartureTime()) {
+                $journeys[$hash] = $j;
+            }
+        }
+
+        return array_values($journeys);
     }
 
 }

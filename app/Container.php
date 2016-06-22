@@ -77,7 +77,7 @@ class Container extends Container {
         $pass = $_SERVER["DATABASE_PASSWORD"];
         $host = $_SERVER["DATABASE_HOSTNAME"];
 
-        $pdo = new PDO('mysql:host={$host};dbname=ojp', $user, $pass);
+        $pdo = new PDO("mysql:host={$host};dbname=ojp", $user, $pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         return $pdo;
