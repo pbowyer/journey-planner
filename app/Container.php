@@ -73,7 +73,11 @@ class Container extends Container {
      * @return PDO
      */
     public function createPDO() {
-        $pdo = new PDO('mysql:host=localhost;dbname=ojp', 'root', '');
+        $user = $_ENV["DATABASE_USERNAME"];
+        $pass = $_ENV["DATABASE_PASSWORD"];
+        $host = $_ENV["DATABASE_HOSTNAME"];
+
+        $pdo = new PDO('mysql:host={$host};dbname=ojp', $user, $pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         return $pdo;
