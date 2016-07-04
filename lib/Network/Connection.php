@@ -4,7 +4,7 @@ namespace JourneyPlanner\Lib\Network;
 
 abstract class Connection {
 
-    const TRAIN = "Train", BUS = "Bus", WALK = "Walk", TUBE = "Tube";
+    const TRAIN = "train", BUS = "bus", WALK = "walk", TUBE = "tube";
 
     protected $origin;
     protected $destination;

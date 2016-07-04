@@ -8,6 +8,7 @@ class TimetableConnection extends Connection {
     private $departureTime;
     private $arrivalTime;
     private $service;
+    private $operator;
 
     /**
      * @param string $origin
@@ -15,14 +16,16 @@ class TimetableConnection extends Connection {
      * @param int $departureTime
      * @param int $arrivalTime
      * @param string $service
+     * @param string $operator
      * @param string $mode
      */
-    public function __construct($origin, $destination, $departureTime, $arrivalTime, $service, $mode = parent::TRAIN) {
+    public function __construct($origin, $destination, $departureTime, $arrivalTime, $service, $operator, $mode = parent::TRAIN) {
         parent::__construct($origin, $destination, $mode);
 
         $this->departureTime = $departureTime;
         $this->arrivalTime = $arrivalTime;
         $this->service = $service;
+        $this->operator = $operator;
     }
 
     /**
@@ -51,6 +54,13 @@ class TimetableConnection extends Connection {
      */
     public function getDuration() {
         return $this->arrivalTime - $this->departureTime;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOperator() {
+        return $this->operator;
     }
 
     /**

@@ -90,4 +90,12 @@ class Leg extends Connection {
     public function getService() {
         return $this->connections[0]->getService();
     }
+
+    /**
+     * @return string
+     */
+    public function getOperator() {
+        return $this->connections[0]->getOperator();
+    }
+    
 }

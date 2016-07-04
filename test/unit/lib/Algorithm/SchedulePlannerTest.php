@@ -5,7 +5,6 @@ use JourneyPlanner\Lib\Network\Journey;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 
@@ -14,19 +13,19 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testBasicJourney() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121")]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ]);
 
@@ -35,19 +34,19 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals([
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121")]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
-                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ], $journeys);
     }
@@ -55,14 +54,14 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithNonTimetableConnection() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ]);
 
@@ -78,19 +77,19 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals([
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 5)]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 5)]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 5)]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
         ], $journeys);
     }
@@ -98,14 +97,14 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testCantMakeUnreachableConnectionsWithTransfer() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ]);
 
@@ -121,19 +120,19 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals([
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 15)]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 15)]),
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
                 new Leg([new NonTimetableConnection("B", "C", 15)]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
             ]),
         ], $journeys);
     }
@@ -141,20 +140,20 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithUnreachableLegs() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1500, 1515, "LN1113")]),
-                new Leg([new TimetableConnection("A", "B", 1700, 1715, "LN1114")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1500, 1515, "LN1113", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1700, 1715, "LN1114", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121")]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ]);
 
@@ -163,9 +162,9 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals([
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
             ])
         ], $journeys);
     }
@@ -173,20 +172,20 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithFirstLegUnreachable() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1400, 1415, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1520, 1545, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1600, 1615, "LN1113")]),
-                new Leg([new TimetableConnection("A", "B", 1700, 1715, "LN1114")]),
+                new Leg([new TimetableConnection("A", "B", 1400, 1415, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1520, 1545, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1600, 1615, "LN1113", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1700, 1715, "LN1114", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121")]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1200, 1215, "LN1123", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
-                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
             ])
         ]);
 
@@ -199,10 +198,10 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithTransferForFirstLeg() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
             ]),
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
             ])
         ]);
 
@@ -218,8 +217,8 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals([
             new Journey([
                 new Leg([new NonTimetableConnection("A", "B", 5)]),
-                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122")]),
-                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1145, "LN1122", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
             ])
         ], $journeys);
     }
@@ -227,21 +226,21 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithCallingPoints() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
             ]),
             new TransferPatternLeg([
                 new Leg([
-                    new TimetableConnection("B", "C", 1020, 1025, "LN1121"),
-                    new TimetableConnection("C", "D", 1025, 1045, "LN1121")
+                    new TimetableConnection("B", "C", 1020, 1025, "LN1121", "LN"),
+                    new TimetableConnection("C", "D", 1025, 1045, "LN1121", "LN")
                 ]),
                 new Leg([
-                    new TimetableConnection("B", "C", 1100, 1125, "LN1122"),
-                    new TimetableConnection("C", "D", 1125, 1145, "LN1122")
+                    new TimetableConnection("B", "C", 1100, 1125, "LN1122", "LN"),
+                    new TimetableConnection("C", "D", 1125, 1145, "LN1122", "LN")
                 ]),
                 new Leg([
-                    new TimetableConnection("B", "D", 1200, 1215, "LN1123")
+                    new TimetableConnection("B", "D", 1200, 1215, "LN1123", "LN")
                 ]),
             ])
         ]);
@@ -251,23 +250,23 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals([
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111")]),
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
                 new Leg([
-                    new TimetableConnection("B", "C", 1020, 1025, "LN1121"),
-                    new TimetableConnection("C", "D", 1025, 1045, "LN1121")
+                    new TimetableConnection("B", "C", 1020, 1025, "LN1121", "LN"),
+                    new TimetableConnection("C", "D", 1025, 1045, "LN1121", "LN")
                 ]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
                 new Leg([
-                    new TimetableConnection("B", "C", 1100, 1125, "LN1122"),
-                    new TimetableConnection("C", "D", 1125, 1145, "LN1122")
+                    new TimetableConnection("B", "C", 1100, 1125, "LN1122", "LN"),
+                    new TimetableConnection("C", "D", 1125, 1145, "LN1122", "LN")
                 ]),
             ]),
             new Journey([
-                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
                 new Leg([
-                    new TimetableConnection("B", "D", 1200, 1215, "LN1123")
+                    new TimetableConnection("B", "D", 1200, 1215, "LN1123", "LN")
                 ]),
             ])
         ], $journeys);

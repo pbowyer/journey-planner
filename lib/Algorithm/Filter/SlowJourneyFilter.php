@@ -40,10 +40,11 @@ class SlowJourneyFilter implements JourneyFilter {
 
         foreach ($results as $j) {
             $hash = $j->getDepartureTime().$j->getArrivalTime();
+            $arrivesFirst = $earliestArrivals[$j->getDepartureTime()] === $j->getArrivalTime();
+            $departsLast = $latestDepartures[$j->getArrivalTime()] === $j->getDepartureTime();
 
-            if (!isset($journeys[$hash]) &&
-                $earliestArrivals[$j->getDepartureTime()] === $j->getArrivalTime() &&
-                $latestDepartures[$j->getArrivalTime()] === $j->getDepartureTime()) {
+            // if it's the fastest service and has the least changes
+            if ($arrivesFirst && $departsLast && (!isset($journeys[$hash]) || count($j->getLegs()) < count($journeys[$hash]->getLegs()))) {
                 $journeys[$hash] = $j;
             }
         }

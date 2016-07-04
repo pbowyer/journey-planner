@@ -27,38 +27,7 @@ class DatabaseLoader {
     public function __construct(PDO $pdo) {
         $this->db = $pdo;
     }
-
-    /**
-     * Get any connections that are relevant to this query
-     *
-     * @param  int $startTimestamp
-     * @param  string $origin    e.g. CHX
-     * @return TimetableConnection[]
-     */
-    public function getTimetableConnections($startTimestamp, $origin) {
-        $dow = lcfirst(date('l', $startTimestamp));
-
-        $stmt = $this->db->prepare("
-            SELECT TIME_TO_SEC(c.departureTime) as departureTime, TIME_TO_SEC(c.arrivalTime) as arrivalTime, c.origin, c.destination, c.service
-            FROM timetable_connection c
-            JOIN shortest_path sp
-              ON c.destination = sp.destination
-              AND :origin = sp.origin
-            WHERE departureTime > SEC_TO_TIME(:startTime + sp.duration)
-            AND startDate <= :startDate AND endDate >= :startDate
-            AND {$dow} = 1
-            ORDER BY arrivalTime
-        ");
-
-        $stmt->execute([
-            'startTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
-            'startDate' => date("Y-m-d", $startTimestamp),
-            'origin' => $origin
-        ]);
-
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
-    }
-
+    
     /**
      * Grap all connections after the target time
      *
@@ -84,18 +53,7 @@ class DatabaseLoader {
 
         return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
     }
-
-    /**
-     * Return all the pre-cached fastest connections between two stops
-     *
-     * @return array
-     */
-    public function getFastestConnections() {
-        $stmt = $this->db->query("SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service FROM fastest_connection");
-
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
-    }
-
+    
     /**
      * @param int $targetTimestamp
      * @return NonTimetableConnection[]
@@ -162,55 +120,7 @@ class DatabaseLoader {
 
         return $results;
     }
-
-    /**
-     * @param  string $origin
-     * @param  string $destination
-     * @param  int $startTimestamp
-     * @return TransferPatternSchedule[]
-     */
-    public function getScheduleFromTransferPattern($origin, $destination, $startTimestamp) {
-        $dow = lcfirst(date('l', $startTimestamp));
-
-        $stmt = $this->db->prepare("
-            SELECT
-              leg.transfer_pattern as transfer_pattern,
-              leg.id as transfer_leg,
-              train_uid as service,
-              cstation.parent_station as station,
-              TIME_TO_SEC(calling.arrival_time) as arrivalTime,
-              TIME_TO_SEC(calling.departure_time) as departureTime
-            FROM transfer_pattern
-            STRAIGHT_JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern            
-            STRAIGHT_JOIN stops ostation FORCE INDEX FOR JOIN (`parent_station`) ON ostation.parent_station = leg.origin             
-            STRAIGHT_JOIN stops dstation FORCE INDEX FOR JOIN (`parent_station`) ON dstation.parent_station = leg.destination             
-            STRAIGHT_JOIN stop_times as dept FORCE INDEX FOR JOIN (`stop_id`) ON dept.stop_id = ostation.stop_id             
-            JOIN stop_times as arrv ON arrv.trip_id = dept.trip_id and arrv.stop_id = dstation.stop_id
-            JOIN trips on dept.trip_id = trips.trip_id
-            JOIN calendar FORCE INDEX FOR JOIN(`service_id`) USING(service_id)
-            JOIN stop_times as calling ON dept.trip_id = calling.trip_id AND calling.stop_sequence >= dept.stop_sequence AND calling.stop_sequence <= arrv.stop_sequence
-            JOIN stops cstation ON cstation.stop_id = calling.stop_id   
-            WHERE arrv.stop_sequence > dept.stop_sequence
-            AND transfer_pattern.origin = :origin
-            AND transfer_pattern.destination = :destination
-            AND dept.departure_time >= SEC_TO_TIME(:departureTime)
-            AND start_date <= :startDate AND end_date >= :startDate
-            AND {$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, calling.trip_id, calling.stop_sequence
-        ");
-
-        $stmt->execute([
-            'departureTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
-            'startDate' => date("Y-m-d", $startTimestamp),
-            'origin' => $origin,
-            'destination' => $destination
-        ]);
-
-        $factory = new TransferPatternScheduleFactory();
-
-        return $factory->getSchedules($stmt->fetchAll(PDO::FETCH_ASSOC));
-    }
-
+    
     /**
      * @param $origin
      * @param $destination
@@ -228,7 +138,9 @@ class DatabaseLoader {
               tt.origin,
               tt.destination,
               TIME_TO_SEC(tt.departureTime) as departureTime,
-              TIME_TO_SEC(tt.arrivalTime) as arrivalTime
+              TIME_TO_SEC(tt.arrivalTime) as arrivalTime,
+              operator,
+              `type`
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             JOIN timetable_connection dept ON leg.origin = dept.origin

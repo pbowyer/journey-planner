@@ -1,21 +1,11 @@
 
-DROP TABLE IF EXISTS `fastest_connection`;
-CREATE TABLE `fastest_connection` (
-  `departureTime` TIME DEFAULT NULL,
-  `arrivalTime` TIME DEFAULT NULL,
-  `origin` char(3) NOT NULL,
-  `destination` char(3) NOT NULL,
-  `service` char(8) NOT NULL,
-  PRIMARY KEY (`departureTime`,`arrivalTime`,`origin`,`destination`,`service`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS `timetable_connection`;
 CREATE TABLE `timetable_connection` (
   `departureTime` TIME DEFAULT NULL,
   `arrivalTime` TIME DEFAULT NULL,
   `origin` char(3) NOT NULL,
   `destination` char(3) NOT NULL,
-  `service` VARCHAR(8) NOT NULL,
+  `service` VARCHAR(26) NOT NULL,
   `monday` TINYINT(1) NOT NULL,
   `tuesday` TINYINT(1) NOT NULL,
   `wednesday` TINYINT(1) NOT NULL,
@@ -25,6 +15,8 @@ CREATE TABLE `timetable_connection` (
   `sunday` TINYINT(1) NOT NULL,
   `startDate` DATE NOT NULL,
   `endDate` DATE NOT NULL,
+  `operator` CHAR(2),
+  `type` varchar(5),
   `dummy` char(3) DEFAULT '---',
   `dummy2` TIME DEFAULT NULL,
   PRIMARY KEY (`departureTime`,`arrivalTime`,`origin`,`destination`,`service`, `endDate`),
@@ -44,14 +36,6 @@ CREATE TABLE `timetable_connection` (
   KEY `service` (`service`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `shortest_path`;
-CREATE TABLE `shortest_path` (
-  `origin` char(3) NOT NULL,
-  `destination` char(3) NOT NULL,
-  `duration` int(11) unsigned DEFAULT NULL,
-  PRIMARY KEY (`origin`,`destination`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS `interchange`;
 CREATE TABLE `interchange` (
   `station` char(3) NOT NULL,
@@ -59,8 +43,7 @@ CREATE TABLE `interchange` (
   PRIMARY KEY (`station`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `transfer_pattern`;
-CREATE TABLE `transfer_pattern` (
+CREATE TABLE IF NOT EXISTS `transfer_pattern` (
   `id` INT(12) unsigned AUTO_INCREMENT,
   `origin` char(3) NOT NULL,
   `destination` char(3) NOT NULL,
@@ -69,8 +52,7 @@ CREATE TABLE `transfer_pattern` (
   KEY `destination` (`destination`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `transfer_pattern_leg`;
-CREATE TABLE `transfer_pattern_leg` (
+CREATE TABLE IF NOT EXISTS `transfer_pattern_leg` (
   `id` INT(12) unsigned AUTO_INCREMENT,
   `transfer_pattern` INT(12) unsigned NOT NULL,
   `origin` char(3) NOT NULL,

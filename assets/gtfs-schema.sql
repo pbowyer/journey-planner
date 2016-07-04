@@ -26,7 +26,7 @@ CREATE TABLE `calendar_dates` (
 DROP TABLE IF EXISTS `calendar`;
 CREATE TABLE `calendar` (
     id INT(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    service_id VARCHAR(20) NOT NULL,
+    service_id VARCHAR(26) NOT NULL,
     monday TINYINT(1) NOT NULL,
     tuesday TINYINT(1) NOT NULL,
     wednesday TINYINT(1) NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE `trips` (
     id INT(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     transit_system VARCHAR(50) NOT NULL,
     route_id VARCHAR(100) NOT NULL,
-    service_id VARCHAR(20) NOT NULL,
+    service_id VARCHAR(26) NOT NULL,
     trip_id INT(12) unsigned NOT NULL,
     trip_headsign VARCHAR(255),
     trip_short_name VARCHAR(255),

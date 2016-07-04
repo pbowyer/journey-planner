@@ -35,11 +35,7 @@ class Container extends Container {
         $this['command.plan_journey'] = function(Container $container) {
             return new PlanJourney($container['loader.database']);
         };
-
-        $this['command.create_tree'] = function(Container $container) {
-            return new CreateShortestPathTree($container['loader.database'], $container['persistence.tree']);
-        };
-
+        
         $this['command.transfer_pattern'] = function(Container $container) {
             return new FindTransferPatterns(
                 $container['loader.database'],
@@ -52,14 +48,7 @@ class Container extends Container {
         $this['loader.database'] = function(Container $container) {
             return new DatabaseLoader($container['db']);
         };
-
-        $this['persistence.tree'] = function(Container $container) {
-            $manager = new ProcessManager();
-            $strategy = new ChunkStrategy(32);
-
-            return new TreePersistence($manager, $strategy, [$this, 'createPDO']);
-        };
-
+        
         $this['logger'] = function() {
             $stream = new StreamHandler('php://stdout');
             $logger = new Logger('php-journey-planner');
