@@ -38,16 +38,16 @@ class DatabaseLoader {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
-            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service
+            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service, operator, `type`
             FROM timetable_connection
-            WHERE departureTime > SEC_TO_TIME(:startTime)
+            WHERE departureTime >= :startTime
             AND startDate <= :startDate AND endDate >= :startDate
             AND {$dow} = 1
             ORDER BY arrivalTime
         ");
 
         $stmt->execute([
-            'startTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
+            'startTime' => date("H:i:s", $startTimestamp),
             'startDate' => date("Y-m-d", $startTimestamp),
         ]);
 
@@ -149,14 +149,14 @@ class DatabaseLoader {
             WHERE arrv.arrivalTime > dept.departureTime
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
-            AND dept.departureTime >= SEC_TO_TIME(:departureTime)
+            AND dept.departureTime >= :departureTime
             AND dept.startDate <= :startDate AND dept.endDate >= :startDate
             AND dept.{$dow} = 1
             ORDER BY leg.transfer_pattern, leg.id, dept.departureTime, tt.service, tt.departureTime
         ");
 
         $stmt->execute([
-            'departureTime' => strtotime('1970-01-01 '.date("H:i:s", $startTimestamp)),
+            'departureTime' => date("H:i:s", $startTimestamp),
             'startDate' => date("Y-m-d", $startTimestamp),
             'origin' => $origin,
             'destination' => $destination
