@@ -139,8 +139,8 @@ class DatabaseLoader {
               tt.destination,
               TIME_TO_SEC(tt.departureTime) as departureTime,
               TIME_TO_SEC(tt.arrivalTime) as arrivalTime,
-              operator,
-              `type`
+              tt.operator,
+              tt.type
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             JOIN timetable_connection dept ON leg.origin = dept.origin
