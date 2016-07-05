@@ -134,7 +134,7 @@ class DatabaseLoader {
             SELECT 
               leg.transfer_pattern as transfer_pattern,
               leg.id as transfer_leg,
-              tt.service,
+              train_uid as service,
               tt.origin,
               tt.destination,
               TIME_TO_SEC(tt.departureTime) as departureTime,
@@ -146,6 +146,7 @@ class DatabaseLoader {
             JOIN timetable_connection dept ON leg.origin = dept.origin
             JOIN timetable_connection arrv ON leg.destination = arrv.destination AND dept.service = arrv.service
             JOIN timetable_connection tt ON tt.service = dept.service AND tt.departureTime >= dept.departureTime AND tt.arrivalTime <= arrv.arrivalTime
+            JOIN trips ON tt.service = trips.trip_id
             WHERE arrv.arrivalTime > dept.departureTime
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
