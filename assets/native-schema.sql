@@ -60,3 +60,10 @@ CREATE TABLE IF NOT EXISTS `transfer_pattern_leg` (
   PRIMARY KEY (`id`),
   KEY `transfer_pattern` (`transfer_pattern`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `last_transfer_pattern_scan` (
+  `date` DATE,
+  PRIMARY KEY (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO last_transfer_pattern_scan VALUES(NOW());
