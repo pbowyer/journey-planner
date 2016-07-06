@@ -60,17 +60,17 @@ class TransferPatternPersistence {
             /** @var TransferPattern $pattern */
             foreach ($tree as $destination => $pattern) {
                 $hash = $pattern->getHash($station, $destination);
-error_log("Hash {$hash}");
+
                 if (isset($existingPatterns[$hash])) {
                     continue;
                 }
-error_log("Saving {$hash}");
+
                 $insertPattern->execute([$station, $destination]);
                 $patternId = $db->lastInsertId();
                 $existingPatterns[$hash] = true;
 
                 foreach ($pattern->getTimetableLegs() as $leg) {
-                    $insertLegSQL->execute($patternId, $leg->getOrigin(), $leg->getDestination());
+                    $insertLegSQL->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
                 }
             }
         }

@@ -40,7 +40,7 @@ class Container extends Container {
             return new FindTransferPatterns(
                 $container['loader.database'],
                 new ProcessManager(),
-                new ChunkStrategy(8),
+                new ChunkStrategy($container['cpu.cores']),
                 [$this, 'createPDO']
             );
         };
@@ -55,6 +55,12 @@ class Container extends Container {
             $logger->pushHandler($stream);
 
             return $logger;
+        };
+
+        $this['cpu.cores'] = function () {
+            $cpuinfo = file_get_contents('/proc/cpuinfo');
+            preg_match_all('/^processor/m', $cpuinfo, $matches);
+            return count($matches[0]);
         };
     }
 
