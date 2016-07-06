@@ -29,7 +29,6 @@ class Console extends Application {
         $defaultCommands = parent::getDefaultCommands();
 
         $defaultCommands[] = $this->container['command.plan_journey'];
-        $defaultCommands[] = $this->container['command.create_tree'];
         $defaultCommands[] = $this->container['command.transfer_pattern'];
 
         return $defaultCommands;

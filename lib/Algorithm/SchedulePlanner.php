@@ -66,10 +66,6 @@ class SchedulePlanner implements JourneyPlanner {
             // create a journey for each connection in the first leg
             /** @var Leg $leg */
             foreach ($transferLeg->getLegs() as $leg) {
-                if ($leg->getDepartureTime() < $departureTime) {
-                    continue;
-                }
-
                 // check if we need a transfer to get to the origin
                 if ($leg->getOrigin() !== $origin) {
                     $legs = [$this->getTransfer($origin, $leg->getOrigin(), $departureTime), $leg];

@@ -27,16 +27,25 @@ class TransferPattern {
     }
 
     /**
+     * @param string $origin
+     * @param string $destination
      * @return string
      */
-    public function getHash() {
-        $hash = "";
+    public function getHash($origin, $destination) {
+        $hash = $origin.$destination;
 
-        foreach ($this->legs as $leg) {
+        foreach ($this->getTimetableLegs() as $leg) {
             $hash .= $leg->getOrigin().$leg->getDestination();
         }
 
         return $hash;
+    }
+
+    /**
+     * @return Leg[]
+     */
+    public function getTimetableLegs() {
+        return array_filter($this->legs, function(Leg $leg) { return !$leg->isTransfer(); });
     }
 
 }

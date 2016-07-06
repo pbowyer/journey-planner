@@ -21,14 +21,36 @@ class FindTransferPatterns extends ConsoleCommand {
         "next friday + 1 month",
         "next saturday + 1 month",
         "next sunday + 1 month",
+        "next monday + 2 months",
+        "next friday + 2 months",
+        "next saturday + 2 months",
+        "next sunday + 2 months",
     ];
 
     const HOURS = [
+        "01:00",
+        "02:00",
+        "03:00",
+        "04:00",
         "05:00",
+        "06:00",
         "07:00",
+        "08:00",
+        "09:00",
+        "10:00",
+        "11:00",
         "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+        "16:00",
         "17:00",
+        "18:00",
+        "19:00",
+        "20:00",
+        "21:00",
         "22:00",
+        "23:00",
     ];
 
     /**
@@ -93,26 +115,14 @@ class FindTransferPatterns extends ConsoleCommand {
 
         $stations = array_keys($this->loader->getLocations());
         $persistence = new TransferPatternPersistence($timetables, $interchange);
-
-        $this->outputTask($out, "Clearing previous patterns", function() use ($persistence) {
-            $persistence->clearPreviousPatterns(call_user_func($this->dbFactory));
-        });
-
+        
         $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence) {
             $callable = function($station) use ($persistence) {
                 $persistence->calculateTransferPatternsForStation(call_user_func($this->dbFactory), $station);
             };
 
-            $db = call_user_func($this->dbFactory);
-            $db->exec("ALTER TABLE transfer_pattern DROP KEY origin");
-            $db->exec("ALTER TABLE transfer_pattern DROP KEY destination");
-
             $this->processManager->process($stations, $callable, $this->forkStrategy);
             $this->processManager->wait();
-
-            $db = call_user_func($this->dbFactory);
-            $db->exec("ALTER TABLE transfer_pattern ADD KEY origin (origin)");
-            $db->exec("ALTER TABLE transfer_pattern ADD KEY destination (destination)");
         });
 
         $this->outputMemoryUsage($out);
