@@ -51,7 +51,7 @@ class DatabaseLoader {
             'startDate' => date("Y-m-d", $startTimestamp),
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','']);
+        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','','']);
     }
     
     /**

@@ -78,7 +78,7 @@ class Leg extends Connection {
     }
 
     /**
-     * @return Conection[]
+     * @return Connection[]
      */
     public function getConnections() {
         return $this->connections;
