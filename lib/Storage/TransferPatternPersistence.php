@@ -48,7 +48,8 @@ class TransferPatternPersistence {
      */
     public function calculateTransferPatternsForStation(PDO $db, $station) {
         $db->beginTransaction();
-
+error_log("*** Starting {$station}");
+        
         $insertPattern = $db->prepare("INSERT INTO transfer_pattern VALUES (null, ?, ?)");
         $insertLegSQL = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $existingPatterns = array_flip($this->getExistingPatterns($db, $station));
@@ -56,7 +57,7 @@ class TransferPatternPersistence {
         foreach ($this->timetables as $time => $timetables) {
             $treeBuilder = new ConnectionScanner($timetables["timetable"], $timetables["non_timetable"], $this->interchange);
             $tree = $treeBuilder->getShortestPathTree($station);
-
+error_log("    Tree generated for {$station} {$time}");
             /** @var TransferPattern $pattern */
             foreach ($tree as $destination => $pattern) {
                 $hash = $pattern->getHash($station, $destination);
@@ -73,6 +74,7 @@ class TransferPatternPersistence {
                     $insertLegSQL->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
                 }
             }
+error_log("    Completed storage of {$station} {$time}");
         }
 
         $db->commit();
