@@ -3,9 +3,9 @@
 namespace JourneyPlanner\Lib\Storage;
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
+use JourneyPlanner\Lib\Algorithm\MinimumSpanningTreeGenerator;
 use JourneyPlanner\Lib\Network\Connection;
-use JourneyPlanner\Lib\Network\NonTimetableConnection;
-use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use PDO;
 
@@ -25,59 +25,67 @@ class TransferPatternPersistence {
     private $interchange;
 
     /**
-     * @param array $timetables
-     * @param array $interchange
+     * @var array
      */
-    public function __construct(array $timetables, array $interchange) {
-        $this->timetables = $timetables;
-        $this->interchange = $interchange;
-    }
+    private $nonTimetableConnections;
 
     /**
-     * Truncate the tables before use
-     * @param PDO $db
+     * @param array $timetables
+     * @param array $nonTimetableConnections
+     * @param array $interchange
      */
-    public function clearPreviousPatterns(PDO $db) {
-        $db->exec("TRUNCATE transfer_pattern");
-        $db->exec("TRUNCATE transfer_pattern_leg");
+    public function __construct(array $timetables, array $nonTimetableConnections, array $interchange) {
+        $this->timetables = $timetables;
+        $this->nonTimetableConnections = $nonTimetableConnections;
+        $this->interchange = $interchange;
     }
-
+    
     /**
      * @param PDO $db
      * @param string $station
      */
     public function calculateTransferPatternsForStation(PDO $db, $station) {
         $db->beginTransaction();
-error_log("*** Starting {$station}");
-        
+
         $insertPattern = $db->prepare("INSERT INTO transfer_pattern VALUES (null, ?, ?)");
         $insertLegSQL = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $existingPatterns = array_flip($this->getExistingPatterns($db, $station));
 
-        foreach ($this->timetables as $time => $timetables) {
-            $treeBuilder = new ConnectionScanner($timetables["timetable"], $timetables["non_timetable"], $this->interchange);
-            $tree = $treeBuilder->getShortestPathTree($station);
-error_log("    Tree generated for {$station} {$time}");
-            /** @var TransferPattern $pattern */
-            foreach ($tree as $destination => $pattern) {
-                $hash = $pattern->getHash($station, $destination);
+        foreach ($this->timetables as $timetable) {
+            foreach ($this->getTreeBuilders($timetable) as $treeBuilder) {
+                $tree = $treeBuilder->getShortestPathTree($station);
 
-                if (isset($existingPatterns[$hash])) {
-                    continue;
-                }
+                /** @var TransferPattern $pattern */
+                foreach ($tree as $destination => $pattern) {
+                    $hash = $pattern->getHash($station, $destination);
 
-                $insertPattern->execute([$station, $destination]);
-                $patternId = $db->lastInsertId();
-                $existingPatterns[$hash] = true;
+                    if (isset($existingPatterns[$hash]) || count($pattern->getLegs()) > 7) {
+                        continue;
+                    }
+                    error_log("Found $hash");
+                    $insertPattern->execute([$station, $destination]);
+                    $patternId = $db->lastInsertId();
+                    $existingPatterns[$hash] = true;
 
-                foreach ($pattern->getTimetableLegs() as $leg) {
-                    $insertLegSQL->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
+                    foreach ($pattern->getTimetableLegs() as $leg) {
+                        $insertLegSQL->execute([$patternId, $leg->getOrigin(), $leg->getDestination()]);
+                    }
                 }
             }
-error_log("    Completed storage of {$station} {$time}");
         }
 
         $db->commit();
+    }
+
+    /**
+     * @param Connection[] $timetable
+     * @return MinimumSpanningTreeGenerator[]
+     */
+    private function getTreeBuilders(array $timetable) {
+        return [
+            new ConnectionScanner($timetable, $this->nonTimetableConnections, $this->interchange),
+            new MinimumChangesConnectionScanner($timetable, $this->nonTimetableConnections, $this->interchange),
+        ];
     }
 
     /**

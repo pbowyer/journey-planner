@@ -20,17 +20,14 @@ class FindTransferPatterns extends ConsoleCommand {
         "06:00",
         "07:00",
         "08:00",
-        "09:00",
         "10:00",
         "12:00",
         "13:00",
         "16:00",
         "17:00",
         "18:00",
-        "19:00",
         "20:00",
         "21:00",
-        "22:00",
         "23:00",
     ];
 
@@ -86,7 +83,11 @@ class FindTransferPatterns extends ConsoleCommand {
     protected function execute(InputInterface $input, OutputInterface $out) {
         $this->outputHeading($out, "Transfer Patterns");
         $scanDate = $this->getNextScanDate();
-        
+
+        $nonTimetableConnections = $this->outputTask($out, "Loading non-timetable connections", function() use ($scanDate) {
+            return $this->loader->getNonTimetableConnections(strtotime($scanDate));
+        });
+            
         $timetables = $this->outputTask($out, "Loading timetables", function() use ($scanDate) {
             return $this->getTimetables($scanDate);
         });
@@ -96,7 +97,7 @@ class FindTransferPatterns extends ConsoleCommand {
         });
 
         $stations = array_keys($this->loader->getLocations());
-        $persistence = new TransferPatternPersistence($timetables, $interchange);
+        $persistence = new TransferPatternPersistence($timetables, $nonTimetableConnections, $interchange);
         
         $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence) {
             $callable = function($station) use ($persistence) {
@@ -132,17 +133,14 @@ class FindTransferPatterns extends ConsoleCommand {
     }
 
     /**
+     * @param $day
      * @return Connection[]
      */
     private function getTimetables($day) {
         $timetables = [];
-        $nonTimetableConnections = $this->loader->getNonTimetableConnections(strtotime($day));
 
         foreach (self::HOURS as $hour) {
-            $timetables["{$day} at {$hour}"] = [
-                "timetable" => $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}")),
-                "non_timetable" => $nonTimetableConnections
-            ];
+            $timetables[] = $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}"));
         }
 
         return $timetables;

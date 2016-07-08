@@ -34,7 +34,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      *
      * @var Connection[]
      */
-    private $connections;
+    protected $connections;
 
     /**
      * HashMap storing each connections earliest arrival time, it's used for convenience
@@ -42,7 +42,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      *
      * @var array
      */
-    private $arrivals;
+    protected $arrivals;
 
     /**
      * HashMap of station => interchange time required at that station when changing service
@@ -127,9 +127,17 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
                $this->connections[$connection->getOrigin()]->requiresInterchangeWith($connection) ? $this->interchangeTimes[$connection->getOrigin()] : 0;
     }
 
-    private function thisConnectionIsBetter(TimetableConnection $connection) {
-        return !isset($this->arrivals[$connection->getDestination()]) ||
-               $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
+    protected function thisConnectionIsBetter(Connection $connection) {
+        $noExistingConnection = !isset($this->arrivals[$connection->getDestination()]);
+
+        if ($connection instanceof NonTimetableConnection) {
+            return $noExistingConnection || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
+        }
+        else if ($connection instanceof TimetableConnection) {
+            return $noExistingConnection || $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
+        }
+        
+        throw new PlanningException("Unknown connection type " . get_class($connection));
     }
 
     /**
@@ -145,11 +153,9 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     private function checkForBetterNonTimetableConnections($origin, $time) {
         // check if there is a non timetable connection starting at the destination, and process it's connections
         if (isset($this->nonTimetable[$origin])) {
+            /** @var NonTimetableConnection $connection */
             foreach ($this->nonTimetable[$origin] as $connection) {
-                $noExistingConnection = !isset($this->arrivals[$connection->getDestination()]);
-                $thisConnectionIsBetter = $noExistingConnection || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
-
-                if ($connection->isAvailableAt($time) && $thisConnectionIsBetter) {
+                if ($connection->isAvailableAt($time) && $this->thisConnectionIsBetter($connection)) {
                     $this->connections[$connection->getDestination()] = $connection;
                     $this->arrivals[$connection->getDestination()] = $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
                 }

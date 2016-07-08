@@ -140,7 +140,6 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
     public function testJourneyWithUnreachableLegs() {
         $schedule = new TransferPatternSchedule([
             new TransferPatternLeg([
-                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
                 new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
                 new Leg([new TimetableConnection("A", "B", 1500, 1515, "LN1113", "LN")]),
                 new Leg([new TimetableConnection("A", "B", 1700, 1715, "LN1114", "LN")]),

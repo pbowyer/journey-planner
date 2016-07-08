@@ -1,6 +1,7 @@
 <?php
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
+use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
 use JourneyPlanner\Lib\Network\Connection;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
@@ -434,4 +435,6 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals($expectedTree, $tree);
     }
+
+
 }

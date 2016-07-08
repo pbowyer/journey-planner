@@ -38,7 +38,7 @@ class DatabaseLoader {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
-            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service, operator, `type`
+            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service, operator, type as mode
             FROM timetable_connection
             WHERE departureTime >= :startTime
             AND startDate <= :startDate AND endDate >= :startDate
