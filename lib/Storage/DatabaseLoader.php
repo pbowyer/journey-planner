@@ -166,4 +166,19 @@ class DatabaseLoader {
 
         return $factory->getSchedulesFromTimetable($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+
+    /**
+     * @param $station
+     * @return string[]
+     */
+    public function getRelevantStations($station) {
+        if (strlen($station) === 3) {
+            return [$station];
+        }
+
+        $stmt = $this->db->prepare("SELECT member_crs FROM group_station WHERE group_nlc = ?");
+        $stmt->execute([$station]);
+
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 }

@@ -55,11 +55,7 @@ class MultiSchedulePlanner implements JourneyPlanner {
             $journeys = $scanner->getJourneys($origin, $destination, $departureTime);
             $results = array_merge($results, $journeys);
         }
-
-        usort($results, function (Journey $a, Journey $b) {
-            return $a->getDepartureTime() <=> $b->getDepartureTime();
-        });
-
+        
         return $results;
     }
 }

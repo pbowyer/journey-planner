@@ -49,6 +49,8 @@ class SlowJourneyFilter implements JourneyFilter {
             }
         }
 
+        ksort($journeys);
+        
         return array_values($journeys);
     }
 

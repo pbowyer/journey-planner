@@ -12,6 +12,10 @@ use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 class TransferPatternScheduleFactory {
 
     public function getSchedulesFromTimetable(array $rows) {
+        if (count($rows) === 0) {
+            return [];
+        }
+        
         $connections = [];
         $legs = [];
         $transferLegs = [];
@@ -22,7 +26,8 @@ class TransferPatternScheduleFactory {
         $prevPattern = null;
 
         foreach ($rows as $row) {
-            if ($prevLeg && $prevLeg !== $row["service"]) {
+            // if the previous service was different or the service is the same on a different pattern
+            if ($prevLeg && $prevLeg !== $row["service"] || $prevTransferLeg && $prevTransferLeg !== $row["transfer_leg"]) {
                 $legs[] = new Leg($connections);
                 $connections = [];
             }
