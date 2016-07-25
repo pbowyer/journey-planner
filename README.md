@@ -1,4 +1,4 @@
-Journey Planner
+Journey Planner[![Build Status](https://travis-ci.org/linusnorton/journey-planner.svg?branch=master)](https://travis-ci.org/linusnorton/journey-planner)
 ===============
 
 A simple journey planner that uses a combination of the Connection Scan Algorithm and Transfer Patterns to quickly (~50ms) return a full days schedule of journeys. It currently uses UK Rail data but could include any GTFS-ish dataset. 
