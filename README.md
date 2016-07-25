@@ -73,11 +73,9 @@ The connection scan algorithm tends is geared towards speed and tends to chuck p
 
 ## Contributing
 
-Issues and PRs are very welcome. In particular, more data stores, more flexible configuration options (config file) and the timetable feeds would be useful. 
+Issues and PRs are very welcome. Alternate journey planning algorithms to calculate transfer patterns are welcome. 
 
-If there is a way of automatically downloading the feed from the ATOC website that would be useful too.
-
-The project is written in TypeScript.
+The project is written in PHP 7.0 but relies on MariaDB/MySQL to do a lot of the heavy lifting.
 
 ## License
 
