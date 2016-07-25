@@ -73,7 +73,7 @@ DROP TABLE IF EXISTS `group_station`;
 CREATE TABLE `group_station` (
   `group_nlc` char(4) NOT NULL,
   `member_crs` char(3) NOT NULL,
-  PRIMARY KEY (`group_station_nlc`, `member_crs`)
+  PRIMARY KEY (`group_nlc`, `member_crs`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO group_station VALUES

@@ -2,13 +2,9 @@
 
 namespace JourneyPlanner\Lib\Algorithm;
 
-use JourneyPlanner\Lib\Network\Connection;
+use JourneyPlanner\Lib\Algorithm\Filter\JourneyFilter;
 use JourneyPlanner\Lib\Network\Journey;
-use JourneyPlanner\Lib\Network\NonTimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
-use JourneyPlanner\Lib\Network\TimetableConnection;
-use Exception;
-use JourneyPlanner\Lib\Network\TransferPatternSchedule;
+use JourneyPlanner\Lib\Storage\ScheduleProvider;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
@@ -16,46 +12,49 @@ use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 class MultiSchedulePlanner implements JourneyPlanner {
 
     /**
-     * @var array
+     * @var ScheduleProvider
      */
-    private $interchangeTimes;
+    private $scheduleProvider;
+    /**
+     * @var JourneyFilter[]
+     */
+    private $filters;
 
     /**
-     * @var TransferPatternSchedule[]
+     * @param ScheduleProvider $scheduleProvider
+     * @param JourneyFilter[] $filters
      */
-    private $schedules;
-
-    /**
-     * @var NonTimetableConnection[]
-     */
-    private $nonTimetableConnections;
-
-    /**
-     * @param array $interchangeTimes
-     * @param TransferPatternSchedule[] $schedules
-     * @param NonTimetableConnection[] $nonTimetableConnections
-     */
-    public function __construct(array $schedules, array $nonTimetableConnections, array $interchangeTimes) {
-        $this->schedules = $schedules;
-        $this->nonTimetableConnections = $nonTimetableConnections;
-        $this->interchangeTimes = $interchangeTimes;
+    public function __construct(ScheduleProvider $scheduleProvider, array $filters) {
+        $this->scheduleProvider = $scheduleProvider;
+        $this->filters = $filters;
     }
 
     /**
-     * @param  string $origin
-     * @param  string $destination
+     * @param  string[] $origins
+     * @param  string[] $destinations
      * @param  string $departureTime
      * @return Journey[]
      */
-    public function getJourneys($origin, $destination, $departureTime) {
+    public function getJourneys($origins, $destinations, $departureTime) {
+        $interchange = $this->scheduleProvider->getInterchangeTimes();
+        $nonTimetable = $this->scheduleProvider->getNonTimetableConnections($departureTime);
         $results = [];
-        
-        foreach ($this->schedules as $schedule) {
-            $scanner = new SchedulePlanner($schedule, $this->nonTimetableConnections, $this->interchangeTimes);
-            $journeys = $scanner->getJourneys($origin, $destination, $departureTime);
-            $results = array_merge($results, $journeys);
+
+        foreach ($origins as $o) {
+            foreach ($destinations as $d) {
+                $schedules = $this->scheduleProvider->getScheduleFromTransferPatternTimetable($o, $d, $departureTime);
+                foreach ($schedules as $schedule) {
+                    $scanner = new SchedulePlanner($schedule, $nonTimetable, $interchange);
+
+                    $results = array_merge($results, $scanner->getJourneys($o, $d, $departureTime));
+                }
+            }
         }
-        
+
+        foreach ($this->filters as $filter) {
+            $results = $filter->filter($results);
+        }
+
         return $results;
     }
 }

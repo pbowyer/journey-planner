@@ -14,7 +14,7 @@ use PDOStatement;
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class DatabaseLoader {
+class DatabaseLoader implements ScheduleProvider {
 
     /**
      * @var PDO
