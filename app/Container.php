@@ -5,17 +5,17 @@ namespace JourneyPlanner\App;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
+use JourneyPlanner\App\Console\Console;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
-use JourneyPlanner\Lib\Storage\TransferPatternPersistence;
 use JourneyPlanner\Lib\Storage\TreePersistence;
 use PDO;
-use Pimple\Container;
+use Pimple\Container as PimpleContainer;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Spork\ProcessManager;
 use Spork\Batch\Strategy\ChunkStrategy;
 
-class Container extends Container {
+class Container extends PimpleContainer {
 
     /**
      * @param array $values
@@ -26,17 +26,17 @@ class Container extends Container {
         $this['name'] = 'PHP Journey Planner';
         $this['version'] = '1.1';
 
-        $this['console'] = function(Container $container) {
+        $this['console'] = function($container) {
             return new Console($container);
         };
 
         $this['db'] = $this->createPDO();
 
-        $this['command.plan_journey'] = function(Container $container) {
+        $this['command.plan_journey'] = function($container) {
             return new PlanJourney($container['loader.database']);
         };
         
-        $this['command.transfer_pattern'] = function(Container $container) {
+        $this['command.transfer_pattern'] = function($container) {
             return new FindTransferPatterns(
                 $container['loader.database'],
                 new ProcessManager(),
@@ -45,7 +45,7 @@ class Container extends Container {
             );
         };
 
-        $this['loader.database'] = function(Container $container) {
+        $this['loader.database'] = function($container) {
             return new DatabaseLoader($container['db']);
         };
         
