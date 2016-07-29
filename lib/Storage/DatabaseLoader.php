@@ -127,6 +127,51 @@ class DatabaseLoader implements ScheduleProvider {
      * @param $startTimestamp
      * @return TransferPatternSchedule[]
      */
+    public function getScheduleFromTransferPatternTimetableWithoutCallingPoints($origin, $destination, $startTimestamp) {
+        $dow = lcfirst(date('l', $startTimestamp));
+
+        $stmt = $this->db->prepare("
+            SELECT 
+              leg.transfer_pattern as transfer_pattern,
+              leg.id as transfer_leg,
+              dept.service,
+              dept.origin,
+              arrv.destination,
+              TIME_TO_SEC(dept.departureTime) as departureTime,
+              TIME_TO_SEC(arrv.arrivalTime) as arrivalTime,
+              arrv.operator,
+              arrv.type
+            FROM transfer_pattern
+            JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
+            JOIN timetable_connection dept ON leg.origin = dept.origin
+            JOIN timetable_connection arrv ON leg.destination = arrv.destination AND dept.service = arrv.service
+            WHERE arrv.arrivalTime > dept.departureTime
+            AND transfer_pattern.origin = :origin
+            AND transfer_pattern.destination = :destination
+            AND dept.departureTime >= :departureTime
+            AND dept.startDate <= :startDate AND dept.endDate >= :startDate
+            AND dept.{$dow} = 1
+            ORDER BY leg.transfer_pattern, leg.id, dept.departureTime, dept.service
+        ");
+
+        $stmt->execute([
+            'departureTime' => date("H:i:s", $startTimestamp),
+            'startDate' => date("Y-m-d", $startTimestamp),
+            'origin' => $origin,
+            'destination' => $destination
+        ]);
+
+        $factory = new TransferPatternScheduleFactory();
+
+        return $factory->getSchedulesFromTimetable($stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /**
+     * @param $origin
+     * @param $destination
+     * @param $startTimestamp
+     * @return TransferPatternSchedule[]
+     */
     public function getScheduleFromTransferPatternTimetable($origin, $destination, $startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
@@ -166,6 +211,7 @@ class DatabaseLoader implements ScheduleProvider {
 
         return $factory->getSchedulesFromTimetable($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+
 
     /**
      * @param $station

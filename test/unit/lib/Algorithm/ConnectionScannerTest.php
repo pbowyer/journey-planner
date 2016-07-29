@@ -333,7 +333,45 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $expected = [new Journey($expectedLegs)];
-        $this->assertEquals($expected, $actual);    }
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testMultipleChangePoints() {
+        $timetable = [
+            new TimetableConnection("A", "B", 1000, 1015, "CS1000", "LN"),
+            new TimetableConnection("B", "C", 1016, 1020, "CS1000", "LN"),
+            new TimetableConnection("C", "D", 1021, 1025, "CS1000", "LN"),
+            new TimetableConnection("D", "F", 1026, 1030, "CS1000", "LN"),
+            new TimetableConnection("0", "B", 1005, 1027, "CS2000", "LN"),
+            new TimetableConnection("B", "C", 1028, 1032, "CS2000", "LN"),
+            new TimetableConnection("C", "D", 1033, 1037, "CS2000", "LN"),
+            new TimetableConnection("D", "E", 1038, 1042, "CS2000", "LN"),
+        ];
+
+        $interchangeTimes = [
+            "A" => 5,
+            "B" => 5,
+            "C" => 5,
+            "D" => 5,
+        ];
+
+        $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
+        $actual = $scanner->getJourneys("A", "E", 900);
+        $expectedLegs = [
+            new Leg([
+                new TimetableConnection("A", "B", 1000, 1015, "CS1000", "LN"),
+                new TimetableConnection("B", "C", 1016, 1020, "CS1000", "LN"),
+                new TimetableConnection("C", "D", 1021, 1025, "CS1000", "LN"),
+            ]),
+            new Leg([
+                new TimetableConnection("D", "E", 1038, 1042, "CS2000", "LN"),
+            ])
+        ];
+
+        $expected = [new Journey($expectedLegs)];
+        $this->assertEquals($expected, $actual);
+    }
+
 
     public function testGetShortestPathTree() {
         $timetable = [
