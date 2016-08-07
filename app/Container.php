@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\App;
 
+use JourneyPlanner\App\Console\Command\AssignStationClusters;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
@@ -34,6 +35,10 @@ class Container extends PimpleContainer {
 
         $this['command.plan_journey'] = function($container) {
             return new PlanJourney($container['loader.database']);
+        };
+
+        $this['command.assign_clusters'] = function($container) {
+            return new AssignStationClusters($container['db']);
         };
         
         $this['command.transfer_pattern'] = function($container) {
@@ -68,9 +73,9 @@ class Container extends PimpleContainer {
      * @return PDO
      */
     public function createPDO() {
-        $user = $_SERVER["DATABASE_USERNAME"];
-        $pass = $_SERVER["DATABASE_PASSWORD"];
-        $host = $_SERVER["DATABASE_HOSTNAME"];
+        $user = $_SERVER["DATABASE_USERNAME"] ?? "root";
+        $pass = $_SERVER["DATABASE_PASSWORD"] ?? "";
+        $host = $_SERVER["DATABASE_HOSTNAME"] ?? "localhost";
 
         $pdo = new PDO("mysql:host={$host};dbname=ojp", $user, $pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
