@@ -32,17 +32,18 @@ class MultiSchedulePlanner implements JourneyPlanner {
     /**
      * @param  string[] $origins
      * @param  string[] $destinations
-     * @param  string $departureTime
+     * @param  int $departureDateTime
      * @return Journey[]
      */
-    public function getJourneys($origins, $destinations, $departureTime) {
+    public function getJourneys($origins, $destinations, $departureDateTime) {
         $interchange = $this->scheduleProvider->getInterchangeTimes();
-        $nonTimetable = $this->scheduleProvider->getNonTimetableConnections($departureTime);
+        $nonTimetable = $this->scheduleProvider->getNonTimetableConnections($departureDateTime);
+        $departureTime = strtotime('1970-01-01 '.date('H:i:s', $departureDateTime));
         $results = [];
 
         foreach ($origins as $o) {
             foreach ($destinations as $d) {
-                $schedules = $this->scheduleProvider->getScheduleFromTransferPatternTimetable($o, $d, $departureTime);
+                $schedules = $this->scheduleProvider->getScheduleFromTransferPatternTimetable($o, $d, $departureDateTime);
                 foreach ($schedules as $schedule) {
                     $scanner = new SchedulePlanner($schedule, $nonTimetable, $interchange);
 
