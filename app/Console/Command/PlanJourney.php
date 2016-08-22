@@ -3,6 +3,7 @@
 namespace JourneyPlanner\App\Console\Command;
 
 use JourneyPlanner\Lib\Algorithm\Filter\SlowJourneyFilter;
+use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
 use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
 use JourneyPlanner\Lib\Network\Journey;
 use Symfony\Component\Console\Input\InputInterface;
@@ -65,8 +66,8 @@ class PlanJourney extends ConsoleCommand {
             $date = time();
         }
 
-        $this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
-        //$this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        //$this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
 
         return 0;
     }
@@ -111,29 +112,17 @@ class PlanJourney extends ConsoleCommand {
     private function planMutlipleJourneys(OutputInterface $out, $origin, $destination, $targetTime) {
         $this->outputHeading($out, "Journey Planner");
 
-        $schedules = $this->outputTask($out, "Loading schedules", function () use ($targetTime, $origin, $destination) {
-            return $this->loader->getScheduleFromTransferPatternTimetable($origin, $destination, $targetTime);
-        });
-
-        $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {
-            return $this->loader->getNonTimetableConnections($targetTime);
-        });
-
-        $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {
-            return $this->loader->getInterchangeTimes();
-        });
 
         $locations = $this->outputTask($out, "Loading locations", function () {
             return $this->loader->getLocations();
         });
 
-        $results = $this->outputTask($out, "Plan journeys", function () use ($schedules, $nonTimetableConnections, $interchangeTimes, $targetTime, $origin, $destination) {
-            $time = strtotime('1970-01-01 '.date('H:i:s', $targetTime));
-            $scanner = new MultiSchedulePlanner($schedules, $nonTimetableConnections, $interchangeTimes);
-            $results = $scanner->getJourneys($origin, $destination, $time);
-            $filter = new SlowJourneyFilter();
+        $results = $this->outputTask($out, "Plan journeys", function () use ($targetTime, $origin, $destination) {
+            $origins = $this->loader->getRelevantStations($origin);
+            $destinations = $this->loader->getRelevantStations($destination);
+            $scanner = new MultiSchedulePlanner($this->loader, [new SlowJourneyFilter()]);
 
-            return $filter->filter($results);
+            return $scanner->getJourneys($origins, $destinations, $targetTime);
         });
 
         foreach ($results as $journey) {
@@ -141,7 +130,6 @@ class PlanJourney extends ConsoleCommand {
         }
 
         $this->outputMemoryUsage($out);
-        $out->writeln("Number of transfer patterns: ".count($schedules));
     }
 
     /**
