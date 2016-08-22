@@ -270,4 +270,46 @@ class SchedulePlannerTest extends PHPUnit_Framework_TestCase {
             ])
         ], $journeys);
     }
+
+    public function testJourneyWithOvertakenLeg() {
+        $schedule = new TransferPatternSchedule([
+            new TransferPatternLeg([
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
+            ]),
+            new TransferPatternLeg([
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1130, 1155, "LN1123", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1100, 1205, "LN1122", "LN")]),
+            ]),
+            new TransferPatternLeg([
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1300, 1315, "LN1133", "LN")]),
+            ])
+        ]);
+
+        $scanner = new SchedulePlanner($schedule, [], []);
+        $journeys = $scanner->getJourneys("A", "D", 900);
+
+        $this->assertEquals([
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1000, 1015, "LN1111", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1020, 1045, "LN1121", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1120, 1145, "LN1131", "LN")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1020, 1045, "LN1112", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1130, 1155, "LN1123", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+            ]),
+            new Journey([
+                new Leg([new TimetableConnection("A", "B", 1100, 1115, "LN1113", "LN")]),
+                new Leg([new TimetableConnection("B", "C", 1130, 1155, "LN1123", "LN")]),
+                new Leg([new TimetableConnection("C", "D", 1200, 1245, "LN1132", "LN")]),
+            ])
+        ], $journeys);
+    }
+
 }

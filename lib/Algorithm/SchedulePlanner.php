@@ -9,6 +9,7 @@ use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use Exception;
+use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 
 /**
@@ -118,6 +119,7 @@ class SchedulePlanner implements JourneyPlanner {
             $transferTime = $transfer->getDuration();
         }
 
+        /** @var Leg $leg */
         foreach ($currentTransferLeg->getLegs() as $leg) {
             if ($previousLeg->getArrivalTime() + $transferTime + $this->getInterchange($leg->getOrigin()) <= $leg->getDepartureTime()) {
                 $legs[] = $leg;
