@@ -27,5 +27,5 @@ interface ScheduleProvider {
      * @param $startTimestamp
      * @return TransferPatternSchedule[]
      */
-    public function getScheduleFromTransferPatternTimetable($origin, $destination, $startTimestamp);
+    public function getTimetable($origin, $destination, $startTimestamp);
 }

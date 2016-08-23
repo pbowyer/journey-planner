@@ -43,7 +43,7 @@ class MultiSchedulePlanner implements JourneyPlanner {
 
         foreach ($origins as $o) {
             foreach ($destinations as $d) {
-                $schedules = $this->scheduleProvider->getScheduleFromTransferPatternTimetable($o, $d, $departureDateTime);
+                $schedules = $this->scheduleProvider->getTimetable($o, $d, $departureDateTime);
                 foreach ($schedules as $schedule) {
                     $scanner = new SchedulePlanner($schedule, $nonTimetable, $interchange);
 

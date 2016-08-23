@@ -127,7 +127,7 @@ class DatabaseLoader implements ScheduleProvider {
      * @param $startTimestamp
      * @return TransferPatternSchedule[]
      */
-    public function getScheduleFromTransferPatternTimetableWithoutCallingPoints($origin, $destination, $startTimestamp) {
+    public function getTimetable($origin, $destination, $startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
@@ -172,7 +172,7 @@ class DatabaseLoader implements ScheduleProvider {
      * @param $startTimestamp
      * @return TransferPatternSchedule[]
      */
-    public function getScheduleFromTransferPatternTimetable($origin, $destination, $startTimestamp) {
+    public function getTimetableWithCallingPoints($origin, $destination, $startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("

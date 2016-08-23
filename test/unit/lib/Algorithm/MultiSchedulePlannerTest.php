@@ -53,7 +53,7 @@ class MultiSchedulePlannerTest extends TestCase {
         $mock = $this->createMock(ScheduleProvider::class);
         $mock->method('getInterchangeTimes')->willReturn([]);
         $mock->method('getNonTimetableConnections')->willReturn([]);
-        $mock->method('getScheduleFromTransferPatternTimetable')->willReturn([$schedule, $schedule2]);
+        $mock->method('getTimetable')->willReturn([$schedule, $schedule2]);
 
         $scanner = new MultiSchedulePlanner($mock, [new SlowJourneyFilter()]);
         $journeys = $scanner->getJourneys(["A"], ["D"], 900);
@@ -127,7 +127,7 @@ class MultiSchedulePlannerTest extends TestCase {
         $mock = $this->createMock(ScheduleProvider::class);
         $mock->method('getInterchangeTimes')->willReturn([]);
         $mock->method('getNonTimetableConnections')->willReturn($nonTimetable);
-        $mock->method('getScheduleFromTransferPatternTimetable')->willReturn([$schedule, $schedule2]);
+        $mock->method('getTimetable')->willReturn([$schedule, $schedule2]);
 
         $scanner = new MultiSchedulePlanner($mock, [new SlowJourneyFilter()]);
         $journeys = $scanner->getJourneys(["A"], ["D"], 900);
