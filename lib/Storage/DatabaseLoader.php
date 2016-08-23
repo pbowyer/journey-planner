@@ -151,7 +151,7 @@ class DatabaseLoader implements ScheduleProvider {
             AND dept.departureTime >= :departureTime
             AND dept.startDate <= :startDate AND dept.endDate >= :startDate
             AND dept.{$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, dept.departureTime, dept.service
+            ORDER BY leg.transfer_pattern, leg.id, arrv.arrivalTime, dept.service
         ");
 
         $stmt->execute([
