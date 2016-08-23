@@ -8,6 +8,7 @@ use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
 use JourneyPlanner\Lib\Network\Journey;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
@@ -36,6 +37,7 @@ class PlanJourney extends ConsoleCommand {
         $this
             ->setName(self::NAME)
             ->setDescription(self::DESCRIPTION)
+            ->addOption("csa", "--csa", InputOption::VALUE_NONE, false)
             ->addArgument(
                 'origin',
                 InputArgument::REQUIRED,
@@ -66,8 +68,12 @@ class PlanJourney extends ConsoleCommand {
             $date = time();
         }
 
-        //$this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
-        $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        if ($input->getOption('csa')) {
+            $this->planJourney($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        }
+        else {
+            $this->planMutlipleJourneys($output, $input->getArgument('origin'), $input->getArgument('destination'), $date);
+        }
 
         return 0;
     }
@@ -82,7 +88,7 @@ class PlanJourney extends ConsoleCommand {
         $this->outputHeading($out, "Journey Planner");
 
         $timetableConnections = $this->outputTask($out, "Loading timetable", function () use ($targetTime, $origin) {
-            return $this->loader->getUnprunedTimetableConnections($targetTime);
+            return $this->loader->getTimetableConnections($targetTime);
         });
 
         $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {

@@ -5,14 +5,14 @@ namespace JourneyPlanner\App;
 use JourneyPlanner\App\Console\Command\AssignStationClusters;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
-use JourneyPlanner\App\Console\Command\CreateShortestPathTree;
 use JourneyPlanner\App\Console\Console;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
-use JourneyPlanner\Lib\Storage\TreePersistence;
+use JourneyPlanner\Lib\Storage\RedisCache;
 use PDO;
 use Pimple\Container as PimpleContainer;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Redis;
 use Spork\ProcessManager;
 use Spork\Batch\Strategy\ChunkStrategy;
 
@@ -51,7 +51,7 @@ class Container extends PimpleContainer {
         };
 
         $this['loader.database'] = function($container) {
-            return new DatabaseLoader($container['db']);
+            return new DatabaseLoader($container['db'], $container['cache']);
         };
         
         $this['logger'] = function() {
@@ -66,6 +66,17 @@ class Container extends PimpleContainer {
             $cpuinfo = file_get_contents('/proc/cpuinfo');
             preg_match_all('/^processor/m', $cpuinfo, $matches);
             return count($matches[0]);
+        };
+
+        $this['cache.redis'] = function () {
+            $redis = new Redis();
+            $redis->connect('127.0.0.1');
+
+            return $redis;
+        };
+
+        $this['cache'] = function ($container) {
+            return new RedisCache($container['cache.redis']);
         };
     }
 

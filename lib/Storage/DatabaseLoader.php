@@ -2,19 +2,18 @@
 
 namespace JourneyPlanner\Lib\Storage;
 
-use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
-use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 use PDO;
-use PDOStatement;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
 class DatabaseLoader implements ScheduleProvider {
+
+    const TP_CACHE_KEY = "|TRANSFER_PATTERN|",
+          TT_CACHE_KEY = "|TIMETABLE|";
 
     /**
      * @var PDO
@@ -22,19 +21,26 @@ class DatabaseLoader implements ScheduleProvider {
     private $db;
 
     /**
-     * @param PDO $pdo
+     * @var Cache
      */
-    public function __construct(PDO $pdo) {
+    private $cache;
+
+    /**
+     * @param PDO $pdo
+     * @param Cache $cache
+     */
+    public function __construct(PDO $pdo, Cache $cache) {
         $this->db = $pdo;
+        $this->cache = $cache;
     }
     
     /**
-     * Grap all connections after the target time
+     * Grab all connections after the target time
      *
      * @param  string $startTimestamp
      * @return TimetableConnection[]
      */
-    public function getUnprunedTimetableConnections($startTimestamp) {
+    public function getTimetableConnections($startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
@@ -127,7 +133,7 @@ class DatabaseLoader implements ScheduleProvider {
      * @param $startTimestamp
      * @return TransferPatternSchedule[]
      */
-    public function getTimetable($origin, $destination, $startTimestamp) {
+    public function getTimetableInOneQuery($origin, $destination, $startTimestamp) {
         $dow = lcfirst(date('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
@@ -164,6 +170,105 @@ class DatabaseLoader implements ScheduleProvider {
         $factory = new TransferPatternScheduleFactory();
 
         return $factory->getSchedulesFromTimetable($stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /**
+     * @param $origin
+     * @param $destination
+     * @param $startTimestamp
+     * @return TransferPatternSchedule[]
+     */
+    public function getTimetable($origin, $destination, $startTimestamp) {
+        $dow = lcfirst(date('l', $startTimestamp));
+        $results = [];
+
+        foreach ($this->getTransferPatterns($origin, $destination) as $row) {
+            $timetable = $this->getScheduleSegment($row["origin"], $row["destination"], $startTimestamp, $dow);
+
+            foreach ($timetable as $result) {
+                $result["transfer_pattern"] = $row["transfer_pattern"];
+                $result["transfer_leg"] = $row["leg"];
+
+                $results[] = $result;
+            }
+        }
+
+        $factory = new TransferPatternScheduleFactory();
+
+        return $factory->getSchedulesFromTimetable($results);
+    }
+
+    private function getTransferPatterns($origin, $destination) {
+        $cachedValue = $this->cache->getObject(self::TP_CACHE_KEY.$origin.$destination);
+
+        if ($cachedValue !== false) {
+            return $cachedValue;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT 
+              leg.transfer_pattern as transfer_pattern,
+              leg.id as leg,
+              leg.origin,
+              leg.destination
+            FROM transfer_pattern
+            JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
+            WHERE transfer_pattern.origin = :origin
+            AND transfer_pattern.destination = :destination
+            ORDER BY leg.transfer_pattern, leg.id
+        ");
+
+        $stmt->execute([
+            'origin' => $origin,
+            'destination' => $destination
+        ]);
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->cache->setObject(self::TP_CACHE_KEY.$origin.$destination, $result);
+
+        return $result;
+    }
+
+    private function getScheduleSegment($origin, $destination, $startTimestamp, $dow) {
+        $cachedValue = $this->cache->getObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp.$dow);
+
+        if ($cachedValue !== false) {
+            return $cachedValue;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT 
+              dept.service,
+              dept.origin,
+              arrv.destination,
+              TIME_TO_SEC(dept.departureTime) as departureTime,
+              TIME_TO_SEC(arrv.arrivalTime) as arrivalTime,
+              arrv.operator,
+              arrv.type
+            FROM timetable_connection dept
+            JOIN timetable_connection arrv ON dept.service = arrv.service
+            WHERE arrv.arrivalTime > dept.departureTime
+            AND dept.origin = :origin
+            AND arrv.destination = :destination
+            AND dept.departureTime >= :departureTime
+            AND dept.startDate <= :startDate AND dept.endDate >= :startDate
+            AND dept.{$dow} = 1
+            ORDER BY arrv.arrivalTime, dept.service
+        ");
+
+        $stmt->execute([
+            'departureTime' => date("H:i:s", $startTimestamp),
+            'startDate' => date("Y-m-d", $startTimestamp),
+            'origin' => $origin,
+            'destination' => $destination
+        ]);
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->cache->setObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp.$dow, $result);
+
+        return $result;
     }
 
     /**

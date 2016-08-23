@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\App\Console\Command;
 
+use JourneyPlanner\Lib\Network\Connection;
 use JourneyPlanner\Lib\Storage\DatabaseLoader;
 use JourneyPlanner\Lib\Storage\TransferPatternPersistence;
 use PDO;
@@ -140,7 +141,7 @@ class FindTransferPatterns extends ConsoleCommand {
         $timetables = [];
 
         foreach (self::HOURS as $hour) {
-            $timetables[] = $this->loader->getUnprunedTimetableConnections(strtotime("{$day} {$hour}"));
+            $timetables[] = $this->loader->getTimetableConnections(strtotime("{$day} {$hour}"));
         }
 
         return $timetables;
