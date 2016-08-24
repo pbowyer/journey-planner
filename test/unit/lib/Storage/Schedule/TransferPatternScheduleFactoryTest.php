@@ -4,7 +4,7 @@ use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
-use JourneyPlanner\Lib\Storage\TransferPatternScheduleFactory;
+use JourneyPlanner\Lib\Storage\Schedule\TransferPatternScheduleFactory;
 
 class TransferPatternScheduleFactoryTest extends PHPUnit_Framework_TestCase {
 

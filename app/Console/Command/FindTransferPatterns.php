@@ -3,8 +3,10 @@
 namespace JourneyPlanner\App\Console\Command;
 
 use JourneyPlanner\Lib\Network\Connection;
-use JourneyPlanner\Lib\Storage\DatabaseLoader;
-use JourneyPlanner\Lib\Storage\TransferPatternPersistence;
+use JourneyPlanner\Lib\Storage\Schedule\ScheduleProvider;
+use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
+use JourneyPlanner\Lib\Storage\Station\StationProvider;
+use JourneyPlanner\Lib\Storage\TransferPattern\TransferPatternPersistence;
 use PDO;
 use Spork\Batch\Strategy\AbstractStrategy;
 use Spork\ProcessManager;
@@ -33,9 +35,14 @@ class FindTransferPatterns extends ConsoleCommand {
     ];
 
     /**
-     * @var DatabaseLoader
+     * @var DatabaseStationProvider
      */
-    private $loader;
+    private $stationProvider;
+
+    /**
+     * @var ScheduleProvider
+     */
+    private $scheduleProvider;
 
     /**
      * @var callable
@@ -53,15 +60,18 @@ class FindTransferPatterns extends ConsoleCommand {
     private $processManager;
 
     /**
-     * @param DatabaseLoader $loader
+     * @param StationProvider $stationProvider
+     * @param ScheduleProvider $scheduleProvider
      * @param ProcessManager $processManager
      * @param AbstractStrategy $forkStrategy
      * @param callable $pdoFactory
+     * @internal param DatabaseStationProvider $loader
      */
-    public function __construct(DatabaseLoader $loader, ProcessManager $processManager, AbstractStrategy $forkStrategy, callable $pdoFactory) {
+    public function __construct(StationProvider $stationProvider, ScheduleProvider $scheduleProvider, ProcessManager $processManager, AbstractStrategy $forkStrategy, callable $pdoFactory) {
         parent::__construct();
 
-        $this->loader = $loader;
+        $this->stationProvider = $stationProvider;
+        $this->scheduleProvider = $scheduleProvider;
         $this->processManager = $processManager;
         $this->forkStrategy = $forkStrategy;
         $this->dbFactory = $pdoFactory;
@@ -86,7 +96,7 @@ class FindTransferPatterns extends ConsoleCommand {
         $scanDate = $this->getNextScanDate();
 
         $nonTimetableConnections = $this->outputTask($out, "Loading non-timetable connections", function() use ($scanDate) {
-            return $this->loader->getNonTimetableConnections(strtotime($scanDate));
+            return $this->scheduleProvider->getNonTimetableConnections(strtotime($scanDate));
         });
             
         $timetables = $this->outputTask($out, "Loading timetables", function() use ($scanDate) {
@@ -94,10 +104,10 @@ class FindTransferPatterns extends ConsoleCommand {
         });
 
         $interchange = $this->outputTask($out, "Loading interchange", function() {
-            return $this->loader->getInterchangeTimes();
+            return $this->scheduleProvider->getInterchangeTimes();
         });
 
-        $stations = array_keys($this->loader->getLocations());
+        $stations = array_keys($this->stationProvider->getLocations());
         $persistence = new TransferPatternPersistence($timetables, $nonTimetableConnections, $interchange);
         
         $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence) {
@@ -141,7 +151,7 @@ class FindTransferPatterns extends ConsoleCommand {
         $timetables = [];
 
         foreach (self::HOURS as $hour) {
-            $timetables[] = $this->loader->getTimetableConnections(strtotime("{$day} {$hour}"));
+            $timetables[] = $this->scheduleProvider->getTimetableConnections(strtotime("{$day} {$hour}"));
         }
 
         return $timetables;

@@ -8,7 +8,7 @@ use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
-use JourneyPlanner\Lib\Storage\ScheduleProvider;
+use JourneyPlanner\Lib\Storage\Schedule\ScheduleProvider;
 use PHPUnit\Framework\TestCase;
 
 class MultiSchedulePlannerTest extends TestCase {

@@ -1,6 +1,6 @@
 <?php
 
-namespace JourneyPlanner\Lib\Storage;
+namespace JourneyPlanner\Lib\Storage\Cache;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>

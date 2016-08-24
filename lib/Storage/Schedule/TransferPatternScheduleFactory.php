@@ -1,6 +1,6 @@
 <?php
 
-namespace JourneyPlanner\Lib\Storage;
+namespace JourneyPlanner\Lib\Storage\Schedule;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPatternLeg;

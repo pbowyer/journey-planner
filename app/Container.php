@@ -6,8 +6,9 @@ use JourneyPlanner\App\Console\Command\AssignStationClusters;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Console;
-use JourneyPlanner\Lib\Storage\DatabaseLoader;
-use JourneyPlanner\Lib\Storage\RedisCache;
+use JourneyPlanner\Lib\Storage\Schedule\CachedProvider;
+use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
+use JourneyPlanner\Lib\Storage\Cache\RedisCache;
 use PDO;
 use Pimple\Container as PimpleContainer;
 use Monolog\Logger;
@@ -34,7 +35,7 @@ class Container extends PimpleContainer {
         $this['db'] = $this->createPDO();
 
         $this['command.plan_journey'] = function($container) {
-            return new PlanJourney($container['loader.database']);
+            return new PlanJourney($container['provider.station'], $container['provider.schedule']);
         };
 
         $this['command.assign_clusters'] = function($container) {
@@ -43,17 +44,22 @@ class Container extends PimpleContainer {
         
         $this['command.transfer_pattern'] = function($container) {
             return new FindTransferPatterns(
-                $container['loader.database'],
+                $container['provider.station'],
+                $container['provider.schedule'],
                 new ProcessManager(),
                 new ChunkStrategy($container['cpu.cores']),
                 [$this, 'createPDO']
             );
         };
 
-        $this['loader.database'] = function($container) {
-            return new DatabaseLoader($container['db'], $container['cache']);
+        $this['provider.station'] = function($container) {
+            return new DatabaseStationProvider($container['db']);
         };
-        
+
+        $this['provider.schedule'] = function($container) {
+            return new CachedProvider($container['db'], $container['cache']);
+        };
+
         $this['logger'] = function() {
             $stream = new StreamHandler('php://stdout');
             $logger = new Logger('php-journey-planner');

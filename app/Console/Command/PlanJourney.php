@@ -6,11 +6,13 @@ use JourneyPlanner\Lib\Algorithm\Filter\SlowJourneyFilter;
 use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
 use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
 use JourneyPlanner\Lib\Network\Journey;
+use JourneyPlanner\Lib\Storage\Schedule\ScheduleProvider;
+use JourneyPlanner\Lib\Storage\Station\StationProvider;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use JourneyPlanner\Lib\Storage\DatabaseLoader;
+use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
 
 class PlanJourney extends ConsoleCommand {
@@ -18,16 +20,24 @@ class PlanJourney extends ConsoleCommand {
     const DESCRIPTION = 'Plan a journey';
 
     /**
-     * @var DatabaseLoader
+     * @var StationProvider
      */
-    private $loader;
+    private $stationProvider;
 
     /**
-     * @param DatabaseLoader $loader
+     * @var ScheduleProvider
      */
-    public function __construct(DatabaseLoader $loader) {
+    private $scheduleProvider;
+
+    /**
+     * @param StationProvider $stationProvider
+     * @param ScheduleProvider $scheduleProvider
+     */
+    public function __construct(StationProvider $stationProvider, ScheduleProvider $scheduleProvider) {
         parent::__construct();
-        $this->loader = $loader;
+
+        $this->stationProvider = $stationProvider;
+        $this->scheduleProvider = $scheduleProvider;
     }
 
     /**
@@ -88,19 +98,19 @@ class PlanJourney extends ConsoleCommand {
         $this->outputHeading($out, "Journey Planner");
 
         $timetableConnections = $this->outputTask($out, "Loading timetable", function () use ($targetTime, $origin) {
-            return $this->loader->getTimetableConnections($targetTime);
+            return $this->scheduleProvider->getTimetableConnections($targetTime);
         });
 
         $nonTimetableConnections = $this->outputTask($out, "Loading non timetable connections", function () use ($targetTime) {
-            return $this->loader->getNonTimetableConnections($targetTime);
+            return $this->scheduleProvider->getNonTimetableConnections($targetTime);
         });
 
         $interchangeTimes = $this->outputTask($out, "Loading interchange", function () {
-            return $this->loader->getInterchangeTimes();
+            return $this->scheduleProvider->getInterchangeTimes();
         });
 
         $locations = $this->outputTask($out, "Loading locations", function () {
-            return $this->loader->getLocations();
+            return $this->stationProvider->getLocations();
         });
 
         $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
@@ -120,13 +130,13 @@ class PlanJourney extends ConsoleCommand {
 
 
         $locations = $this->outputTask($out, "Loading locations", function () {
-            return $this->loader->getLocations();
+            return $this->stationProvider->getLocations();
         });
 
         $results = $this->outputTask($out, "Plan journeys", function () use ($targetTime, $origin, $destination) {
-            $origins = $this->loader->getRelevantStations($origin);
-            $destinations = $this->loader->getRelevantStations($destination);
-            $scanner = new MultiSchedulePlanner($this->loader, [new SlowJourneyFilter()]);
+            $origins = $this->stationProvider->getRelevantStations($origin);
+            $destinations = $this->stationProvider->getRelevantStations($destination);
+            $scanner = new MultiSchedulePlanner($this->scheduleProvider, [new SlowJourneyFilter()]);
 
             return $scanner->getJourneys($origins, $destinations, $targetTime);
         });

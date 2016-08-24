@@ -4,7 +4,7 @@ namespace JourneyPlanner\Lib\Algorithm;
 
 use JourneyPlanner\Lib\Algorithm\Filter\JourneyFilter;
 use JourneyPlanner\Lib\Network\Journey;
-use JourneyPlanner\Lib\Storage\ScheduleProvider;
+use JourneyPlanner\Lib\Storage\Schedule\ScheduleProvider;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>

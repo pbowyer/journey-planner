@@ -1,6 +1,6 @@
 <?php
 
-namespace JourneyPlanner\Lib\Storage;
+namespace JourneyPlanner\Lib\Storage\TransferPattern;
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
 use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
