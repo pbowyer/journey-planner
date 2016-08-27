@@ -51,9 +51,10 @@ class DijkstraShortestPath implements MinimumSpanningTreeGenerator {
      * at the given node
      *
      * @param string $origin
+     * @param int $time
      * @return array
      */
-    public function getShortestPathTree($origin) {
+    public function getShortestPathTree($origin, $time) {
         // HashMap of shortest distance from origin to each node
         $nodeDistance = [];
         // queue of reachable unchecked edges

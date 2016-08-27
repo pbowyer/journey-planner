@@ -15,7 +15,7 @@ class DijkstraShortestPathTest extends PHPUnit_Framework_TestCase {
         ];
 
         $pathFinder = new DijkstraShortestPath($graph);
-        $tree = $pathFinder->getShortestPathTree("A");
+        $tree = $pathFinder->getShortestPathTree("A", 0);
 
         $expected = [
             "A" => 0,

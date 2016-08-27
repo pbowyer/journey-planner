@@ -55,7 +55,7 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
-        $tree = $scanner->getShortestPathTree("ORP");
+        $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
             "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
@@ -92,7 +92,7 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         ];
 
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
-        $tree = $scanner->getShortestPathTree("ORP");
+        $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
             "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
