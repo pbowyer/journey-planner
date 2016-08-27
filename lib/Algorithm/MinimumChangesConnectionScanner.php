@@ -31,12 +31,13 @@ class MinimumChangesConnectionScanner extends ConnectionScanner {
 
     /**
      * @param string $origin
+     * @param int $departureTime
      * @return Journey[]
      */
-    public function getShortestPathTree($origin) {
+    public function getShortestPathTree($origin, $departureTime) {
         $this->changes = [$origin => 0];
 
-        return parent::getShortestPathTree($origin);
+        return parent::getShortestPathTree($origin, $departureTime);
     }
 
     /**

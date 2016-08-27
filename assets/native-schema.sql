@@ -47,6 +47,9 @@ CREATE TABLE IF NOT EXISTS `transfer_pattern` (
   `id` INT(12) unsigned AUTO_INCREMENT,
   `origin` char(3) NOT NULL,
   `destination` char(3) NOT NULL,
+  `journey_duration` smallint(5) unsigned NOT NULL,
+  `departure_date` DATETIME NOT NULL,
+  `scan_date` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   KEY `origin` (`origin`),
   KEY `destination` (`destination`)

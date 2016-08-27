@@ -17,22 +17,6 @@ class FindTransferPatterns extends ConsoleCommand {
     const NAME = 'transfer-patterns';
     const DESCRIPTION = 'Find and store transfer patterns for the entire network';
 
-    const HOURS = [
-        "01:00",
-        "05:00",
-        "06:00",
-        "07:00",
-        "08:00",
-        "10:00",
-        "12:00",
-        "13:00",
-        "16:00",
-        "17:00",
-        "18:00",
-        "20:00",
-        "21:00",
-        "23:00",
-    ];
 
     /**
      * @var DatabaseStationProvider
@@ -96,11 +80,11 @@ class FindTransferPatterns extends ConsoleCommand {
         $scanDate = $this->getNextScanDate();
 
         $nonTimetableConnections = $this->outputTask($out, "Loading non-timetable connections", function() use ($scanDate) {
-            return $this->scheduleProvider->getNonTimetableConnections(strtotime($scanDate));
+            return $this->scheduleProvider->getNonTimetableConnections(strtotime($scanDate." UTC"));
         });
             
         $timetables = $this->outputTask($out, "Loading timetables", function() use ($scanDate) {
-            return $this->getTimetables($scanDate);
+            return $this->scheduleProvider->getTimetableConnections(strtotime("{$scanDate} 00:00 UTC"));
         });
 
         $interchange = $this->outputTask($out, "Loading interchange", function() {
@@ -109,10 +93,10 @@ class FindTransferPatterns extends ConsoleCommand {
 
         $stations = array_keys($this->stationProvider->getLocations());
         $persistence = new TransferPatternPersistence($timetables, $nonTimetableConnections, $interchange);
-        
-        $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence) {
-            $callable = function($station) use ($persistence) {
-                $persistence->calculateTransferPatternsForStation(call_user_func($this->dbFactory), $station);
+
+        $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence, $scanDate) {
+            $callable = function($station) use ($persistence, $scanDate) {
+                $persistence->calculateTransferPatternsForStation(call_user_func($this->dbFactory), $station, $scanDate);
             };
 
             $this->processManager->process($stations, $callable, $this->forkStrategy);
@@ -143,17 +127,4 @@ class FindTransferPatterns extends ConsoleCommand {
         $db->prepare("UPDATE last_transfer_pattern_scan SET date = ?")->execute([$date]);
     }
 
-    /**
-     * @param $day
-     * @return Connection[]
-     */
-    private function getTimetables($day) {
-        $timetables = [];
-
-        foreach (self::HOURS as $hour) {
-            $timetables[] = $this->scheduleProvider->getTimetableConnections(strtotime("{$day} {$hour}"));
-        }
-
-        return $timetables;
-    }
 }

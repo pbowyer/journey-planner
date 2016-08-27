@@ -33,7 +33,7 @@ class CallingPointProvider extends DefaultProvider implements ScheduleProvider {
      * @return TransferPatternSchedule[]
      */
     public function getTimetableWithCallingPoints($origin, $destination, $startTimestamp) {
-        $dow = lcfirst(date('l', $startTimestamp));
+        $dow = lcfirst(gmdate('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
             SELECT 
@@ -61,8 +61,8 @@ class CallingPointProvider extends DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            'departureTime' => date("H:i:s", $startTimestamp),
-            'startDate' => date("Y-m-d", $startTimestamp),
+            'departureTime' => gmdate("H:i:s", $startTimestamp),
+            'startDate' => gmdate("Y-m-d", $startTimestamp),
             'origin' => $origin,
             'destination' => $destination
         ]);

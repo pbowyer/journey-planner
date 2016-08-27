@@ -73,7 +73,7 @@ class PlanJourney extends ConsoleCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $date = $input->getArgument('date');
         if ($date) {
-            $date = strtotime($date);
+            $date = strtotime($date. ' UTC');
         } else {
             $date = time();
         }
@@ -116,7 +116,7 @@ class PlanJourney extends ConsoleCommand {
         $scanner = new ConnectionScanner($timetableConnections, $nonTimetableConnections, $interchangeTimes);
 
         $route = $this->outputTask($out, "Plan journey", function () use ($scanner, $targetTime, $origin, $destination) {
-            return $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.date('H:i:s', $targetTime)));
+            return $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.gmdate('H:i:s', $targetTime).' UTC'));
         });
 
         $this->displayRoute($out, $locations, $route[0]);
@@ -155,7 +155,7 @@ class PlanJourney extends ConsoleCommand {
      */
     private function displayRoute(OutputInterface $out, array $locations, Journey $journey) {
         $this->outputHeading($out, "Route");
-
+        $out->writeln("Duration ".$journey->getDuration());
         foreach ($journey->getLegs() as $leg) {
 
             if (!$leg->isTransfer()) {
@@ -163,9 +163,9 @@ class PlanJourney extends ConsoleCommand {
                     $origin = sprintf('%-30s', $locations[$connection->getOrigin()]);
                     $destination = sprintf('%30s', $locations[$connection->getDestination()]);
                     $out->writeln(
-                        date('H:i', $connection->getDepartureTime()).' '.$origin.' '.
+                        gmdate('H:i', $connection->getDepartureTime()).' '.$origin.' '.
                         sprintf('%-6s', $connection->getService()).' '.
-                        $destination.' '.date('H:i', $connection->getArrivalTime())
+                        $destination.' '.gmdate('H:i', $connection->getArrivalTime())
                     );
                 }
             }

@@ -31,7 +31,7 @@ class DefaultProvider implements ScheduleProvider {
      * @return TimetableConnection[]
      */
     public function getTimetableConnections($startTimestamp) {
-        $dow = lcfirst(date('l', $startTimestamp));
+        $dow = lcfirst(gmdate('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
             SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service, operator, type as mode
@@ -43,8 +43,8 @@ class DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            'startTime' => date("H:i:s", $startTimestamp),
-            'startDate' => date("Y-m-d", $startTimestamp),
+            'startTime' => gmdate("H:i:s", $startTimestamp),
+            'startDate' => gmdate("Y-m-d", $startTimestamp),
         ]);
 
         return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','','']);
@@ -55,7 +55,7 @@ class DefaultProvider implements ScheduleProvider {
      * @return NonTimetableConnection[]
      */
     public function getNonTimetableConnections($targetTimestamp) {
-        $dow = lcfirst(date('l', $targetTimestamp));
+        $dow = lcfirst(gmdate('l', $targetTimestamp));
 
         $stmt = $this->db->prepare("
             SELECT 
@@ -72,7 +72,7 @@ class DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            "targetDate" => date("Y-m-d", $targetTimestamp)
+            "targetDate" => gmdate("Y-m-d", $targetTimestamp)
         ]);
 
         $results = [];
@@ -110,7 +110,7 @@ class DefaultProvider implements ScheduleProvider {
      * @return TransferPatternSchedule[]
      */
     public function getTimetable($origin, $destination, $startTimestamp) {
-        $dow = lcfirst(date('l', $startTimestamp));
+        $dow = lcfirst(gmdate('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
             SELECT 
@@ -137,8 +137,8 @@ class DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            'departureTime' => date("H:i:s", $startTimestamp),
-            'startDate' => date("Y-m-d", $startTimestamp),
+            'departureTime' => gmdate("H:i:s", $startTimestamp),
+            'startDate' => gmdate("Y-m-d", $startTimestamp),
             'origin' => $origin,
             'destination' => $destination
         ]);

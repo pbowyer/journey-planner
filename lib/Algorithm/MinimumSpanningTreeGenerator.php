@@ -8,8 +8,9 @@ namespace JourneyPlanner\Lib\Algorithm;
 interface MinimumSpanningTreeGenerator {
 
     /**
-     * @param  string $origin
+     * @param string $origin
+     * @param int $departureTime
      * @return array
      */
-    public function getShortestPathTree($origin);
+    public function getShortestPathTree($origin, $departureTime);
 }

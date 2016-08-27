@@ -38,7 +38,7 @@ class MultiSchedulePlanner implements JourneyPlanner {
     public function getJourneys($origins, $destinations, $departureDateTime) {
         $interchange = $this->scheduleProvider->getInterchangeTimes();
         $nonTimetable = $this->scheduleProvider->getNonTimetableConnections($departureDateTime);
-        $departureTime = strtotime('1970-01-01 '.date('H:i:s', $departureDateTime));
+        $departureTime = strtotime('1970-01-01 '.gmdate('H:i', $departureDateTime).' UTC');
         $results = [];
 
         foreach ($origins as $o) {

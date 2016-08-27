@@ -27,7 +27,7 @@ class JourneyPlan {
         /** @var ScheduleProvider $scheduleProvider */
         $scheduleProvider = $app['provider.schedule'];
 
-        $targetTime = strtotime($request->get('date'));
+        $targetTime = strtotime($request->get('date')." UTC");
 
         $origins = $stationProvider->getRelevantStations($request->get('origin'));
         $destinations = $stationProvider->getRelevantStations($request->get('destination'));

@@ -48,7 +48,7 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
      * @return TransferPatternSchedule[]
      */
     public function getTimetable($origin, $destination, $startTimestamp) {
-        $dow = lcfirst(date('l', $startTimestamp));
+        $dow = lcfirst(gmdate('l', $startTimestamp));
         $results = [];
 
         foreach ($this->getTransferPatterns($origin, $destination) as $row) {
@@ -139,8 +139,8 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            'departureTime' => date("H:i:s", $startTimestamp),
-            'startDate' => date("Y-m-d", $startTimestamp),
+            'departureTime' => gmdate("H:i:s", $startTimestamp),
+            'startDate' => gmdate("Y-m-d", $startTimestamp),
             'origin' => $origin,
             'destination' => $destination
         ]);

@@ -7,7 +7,6 @@ use JourneyPlanner\Lib\Network\Journey;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
 
 /**
  * @author Linus Norton <linusnorton@gmail.com>
@@ -257,20 +256,24 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * Slightly modified version of the CSA that returns the shortest journeys
      * to each station from the given origin.
      *
-     * @param  $origin
+     * @param string $origin
+     * @param int $departureTime
      * @return array
      */
-    public function getShortestPathTree($origin) {
-        $this->arrivals = [$origin => 0];
+    public function getShortestPathTree($origin, $departureTime) {
+        $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
+        $this->connectionsTo = [];
 
         $this->setAllFastestConnections($origin);
         $tree = [];
 
         foreach (array_keys($this->connections) as $destination) {
-            $tree[$destination] = new TransferPattern(
-                $this->getLegsFromConnections($origin, $destination)
-            );
+            $legs = $this->getLegsFromConnections($origin, $destination);
+
+            if (count($legs) > 0) {
+                $tree[$destination] = new Journey($legs);
+            }
         }
 
         return $tree;
@@ -285,7 +288,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      */
     private function setAllFastestConnections($startStation) {
         // check for non timetable connections at the origin station
-        $this->checkForBetterNonTimetableConnections($startStation, 0);
+        $this->checkForBetterNonTimetableConnections($startStation, $this->arrivals[$startStation]);
 
         foreach ($this->timetable as $connection) {
             if ($this->canGetToThisConnection($connection) && $this->thisConnectionIsBetter($connection)) {

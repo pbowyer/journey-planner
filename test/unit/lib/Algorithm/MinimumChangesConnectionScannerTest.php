@@ -5,7 +5,6 @@ use JourneyPlanner\Lib\Network\Journey;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
 
 class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
@@ -58,13 +57,13 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP");
         $expectedTree = [
-            "WAE" => new TransferPattern([
+            "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
             ]),
-            "LBG" => new TransferPattern([
+            "LBG" => new Journey([
                 new Leg([new TimetableConnection("ORP", "LBG", 1000, 1240, "SE1001", "LN")]),
             ]),
-            "CHX" => new TransferPattern([
+            "CHX" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
                          new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
             ])
@@ -95,14 +94,14 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP");
         $expectedTree = [
-            "WAE" => new TransferPattern([
+            "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
             ]),
-            "LBG" => new TransferPattern([
+            "LBG" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
                 new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
             ]),
-            "CHX" => new TransferPattern([
+            "CHX" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
                     new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
             ])

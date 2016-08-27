@@ -1,12 +1,10 @@
 <?php
 
 use JourneyPlanner\Lib\Algorithm\ConnectionScanner;
-use JourneyPlanner\Lib\Algorithm\MinimumChangesConnectionScanner;
 use JourneyPlanner\Lib\Network\Connection;
 use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\TimetableConnection;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
-use JourneyPlanner\Lib\Network\TransferPattern;
 use JourneyPlanner\Lib\Network\Journey;
 
 
@@ -386,10 +384,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("SEV");
         $expectedTree = [
-            "ORP" => new TransferPattern([
+            "ORP" => new Journey([
                 new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN")])
             ]),
-            "WAE" => new TransferPattern([
+            "WAE" => new Journey([
                 new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN"),
                          new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
             ])
@@ -420,15 +418,15 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP");
         $expectedTree = [
-            "WAE" => new TransferPattern([
+            "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
             ]),
-            "LBG" => new TransferPattern([
+            "LBG" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
                     new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")]),
                 new Leg([new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500", "LN")]),
             ]),
-            "CHX" => new TransferPattern([
+            "CHX" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
                          new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
             ])
@@ -459,14 +457,14 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP");
         $expectedTree = [
-            "WAE" => new TransferPattern([
+            "WAE" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
             ]),
-            "LBG" => new TransferPattern([
+            "LBG" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
                 new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
             ]),
-            "CHX" => new TransferPattern([
+            "CHX" => new Journey([
                 new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
                          new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
             ])
