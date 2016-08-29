@@ -15,7 +15,6 @@ use PDO;
 class TransferPatternPersistence {
 
     const HOURS = [
-        "01:00",
         "05:00",
         "06:00",
         "07:00",
@@ -60,6 +59,8 @@ class TransferPatternPersistence {
 
         foreach ($this->getTreeBuilders() as $treeBuilder) {
             foreach (self::HOURS as $hour) {
+                error_log("Starting {$station} at ".gmdate("H:i", strtotime("1970-01-01 {$hour} UTC")));
+
                 $tree = $treeBuilder->getShortestPathTree($station, strtotime("1970-01-01 {$hour} UTC"));
 
                 /** @var Journey $pattern */

@@ -472,8 +472,11 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expectedTree, $tree);
     }
 
-    public function testChangeAtBeginning() {
-        return;
+    /**
+     * This is modelled on a real world scenario between CHX and PDW with
+     * unnecessary changes at WAE. Happens at virtually any time
+     */
+    public function testUnnecessaryChangeAtBeginning() {
         $timetable = [
             new TimetableConnection("A", "B", 1000, 1010, "CS1000", "LN"),
             new TimetableConnection("A", "B", 1010, 1015, "CS1001", "LN"),
@@ -494,6 +497,37 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
         $route = $scanner->getJourneys("A", "C", 900);
+        $this->assertEquals($expected, $route);
+    }
+
+    /**
+     * This is modelled on MYB -> WWW at 20:00 on a weekday. It puts you on a
+     * train to Haddenham when you could just wait an extra 3 mins at MYB.
+     *
+     * The connection from MYB to Haddenham actually has less calling points
+     * but it doesn't matter as it still connects to the MYB service.
+     */
+    public function testUnnecessaryChangeWithDifferentCallingPoints() {
+        $timetable = [
+            new TimetableConnection("A", "B", 1000, 1010, "CS1000", "LN"),
+            new TimetableConnection("B", "C", 1011, 1012, "CS1000", "LN"),
+            new TimetableConnection("A", "C", 1005, 1015, "CS1001", "LN"),
+            new TimetableConnection("C", "D", 1020, 1045, "CS1001", "LN"),
+        ];
+
+        $interchangeTimes = [
+            "C" => 1,
+        ];
+
+        $expected = [new Journey([
+            new Leg([
+                new TimetableConnection("A", "C", 1005, 1015, "CS1001", "LN"),
+                new TimetableConnection("C", "D", 1020, 1045, "CS1001", "LN"),
+            ]),
+        ])];
+
+        $scanner = new ConnectionScanner($timetable, [], $interchangeTimes);
+        $route = $scanner->getJourneys("A", "D", 900);
         $this->assertEquals($expected, $route);
     }
 
