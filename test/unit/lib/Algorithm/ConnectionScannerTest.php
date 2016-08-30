@@ -358,10 +358,10 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $expectedLegs = [
             new Leg([
                 new TimetableConnection("A", "B", 1000, 1015, "CS1000", "LN"),
-                new TimetableConnection("B", "C", 1016, 1020, "CS1000", "LN"),
-                new TimetableConnection("C", "D", 1021, 1025, "CS1000", "LN"),
             ]),
             new Leg([
+                new TimetableConnection("B", "C", 1028, 1032, "CS2000", "LN"),
+                new TimetableConnection("C", "D", 1033, 1037, "CS2000", "LN"),
                 new TimetableConnection("D", "E", 1038, 1042, "CS2000", "LN"),
             ])
         ];
