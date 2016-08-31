@@ -17,6 +17,8 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
     const TP_CACHE_KEY = "|TRANSFER_PATTERN|",
           TT_CACHE_KEY = "|TIMETABLE|";
 
+    const NUM_PATTERNS = 10;
+
     /**
      * @var PDO
      */
@@ -50,6 +52,8 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
     public function getTimetable($origin, $destination, $startTimestamp) {
         $dow = lcfirst(gmdate('l', $startTimestamp));
         $results = [];
+        $patternCount = 0;
+        $patternId = null;
 
         foreach ($this->getTransferPatterns($origin, $destination) as $row) {
             $timetable = $this->getScheduleSegment($row["origin"], $row["destination"], $startTimestamp, $dow);
@@ -59,6 +63,15 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
                 $result["transfer_leg"] = $row["leg"];
 
                 $results[] = $result;
+            }
+
+            if ($patternId !== $row["transfer_pattern"]) {
+                $patternCount++;
+                $patternId = $row["transfer_pattern"];
+
+                if ($patternCount > self::NUM_PATTERNS) {
+                    break;
+                }
             }
         }
 
@@ -89,7 +102,7 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             WHERE transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
-            ORDER BY leg.transfer_pattern, leg.id
+            ORDER BY transfer_pattern.journey_duration, leg.transfer_pattern, leg.id
         ");
 
         $stmt->execute([
