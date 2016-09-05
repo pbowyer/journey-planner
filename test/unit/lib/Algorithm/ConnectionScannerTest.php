@@ -383,13 +383,17 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("SEV", 900);
         $expectedTree = [
-            "ORP" => new Journey([
-                new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN")])
-            ]),
-            "WAE" => new Journey([
-                new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN"),
-                         new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
-            ])
+            "ORP" => [
+                940 => new Journey([
+                    new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN")])
+                ]),
+            ],
+            "WAE" => [
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("SEV", "ORP", 900, 940, "SE1000", "LN"),
+                        new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
+                ])
+            ]
         ];
 
         $this->assertEquals($expectedTree, $tree);
@@ -406,7 +410,7 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
 
         $nonTimetable = [
             "WAE" => [
-                new NonTimetableConnection("WAE", "LBG", 20),
+                new NonTimetableConnection("WAE", "LBG", 19),
             ]
         ];
 
@@ -417,18 +421,32 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
-            "WAE" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
-            ]),
-            "LBG" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
-                    new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")]),
-                new Leg([new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500", "LN")]),
-            ]),
-            "CHX" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
-                         new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
-            ])
+            "WAE" => [
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
+                ]),
+                1140 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")])
+                ])
+            ],
+            "LBG" => [
+                1053 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")]),
+                    new Leg([new TimetableConnection("CHX", "LBG", 1052, 1053, "SE2500", "LN")]),
+                ]),
+                1159 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 19)]),
+                ])
+
+            ],
+            "CHX" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
+                ])
+            ]
         ];
 
         $this->assertEquals($expectedTree, $tree);
@@ -456,17 +474,76 @@ class ConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new ConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
-            "WAE" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
-            ]),
-            "LBG" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
-                new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
-            ]),
-            "CHX" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
-                         new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
-            ])
+            "WAE" => [
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
+                ]),
+                1140 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")])
+                ])
+            ],
+            "LBG" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
+                ]),
+                1145 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
+                ])
+            ],
+            "CHX" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
+                        new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
+                ])
+            ]
+        ];
+
+        $this->assertEquals($expectedTree, $tree);
+    }
+
+    /**
+     * This scenario tests that the tree generator selects the journey with the latest departure time when given a choice
+     * between two journeys that arrive at the same time.
+     */
+    public function testPatternsWithLatestDeparture() {
+        $timetable = [
+            new TimetableConnection("ORP", "WAE", 1000, 1020, "SE1000", "LN"),
+            new TimetableConnection("ORP", "WAE", 1030, 1040, "SE2000", "LN"),
+            new TimetableConnection("WAE", "CHX", 1040, 1045, "SE2000", "LN"),
+            new TimetableConnection("ORP", "WAE", 1100, 1120, "SE3000", "LN"),
+            new TimetableConnection("ORP", "WAE", 1130, 1140, "SE4000", "LN"),
+            new TimetableConnection("WAE", "CHX", 1140, 1145, "SE4000", "LN"),
+        ];
+
+        $scanner = new ConnectionScanner($timetable, [], []);
+        $tree = $scanner->getShortestPathTree("ORP", 900);
+        $expectedTree = [
+            "WAE" => [
+                1020 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1020, "SE1000", "LN")])
+                ]),
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1030, 1040, "SE2000", "LN")])
+                ]),
+                1120 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1120, "SE3000", "LN")])
+                ]),
+                1140 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1130, 1140, "SE4000", "LN")])
+                ]),
+            ],
+            "CHX" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1030, 1040, "SE2000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE2000", "LN")])
+                ]),
+                1145 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1130, 1140, "SE4000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1140, 1145, "SE4000", "LN")])
+                ])
+            ]
         ];
 
         $this->assertEquals($expectedTree, $tree);

@@ -93,7 +93,7 @@ class FindTransferPatterns extends ConsoleCommand {
 
         $stations = array_keys($this->stationProvider->getLocations());
         $persistence = new TransferPatternPersistence($timetables, $nonTimetableConnections, $interchange);
-
+$stations = ["MYB"];
         $this->outputTask($out, "Calculating transfer patterns", function() use ($stations, $persistence, $scanDate) {
             $callable = function($station) use ($persistence, $scanDate) {
                 $persistence->calculateTransferPatternsForStation(call_user_func($this->dbFactory), $station, $scanDate);
