@@ -84,6 +84,12 @@ class Journey {
         return $this->legs;
     }
 
+    /**
+     * @return int
+     */
+    public function getNumChanges() {
+        return count($this->legs) -1;
+    }
 
     /**
      * @param string $origin
@@ -105,5 +111,38 @@ class Journey {
      */
     public function getTimetableLegs() {
         return array_filter($this->legs, function(Leg $leg) { return !$leg->isTransfer(); });
+    }
+
+    /**
+     * Return a new journey with the given connection added to the end
+     *
+     * @param Connection $connection
+     * @return Journey
+     */
+    public function addConnection(Connection $connection) {
+        $legs = $this->legs; // take a copy of the legs array to avoid modifying this trip
+        $lastLegConnections = end($legs)->getConnections();
+        $lastConnection = end($lastLegConnections);
+
+        if ($connection->requiresInterchangeWith($lastConnection)) {
+            $legs[] = new Leg([$connection]);
+        }
+        else {
+            array_pop($legs);
+            $lastLegConnections[] = $connection;
+            $legs[] = new Leg($lastLegConnections);
+        }
+
+        return new Journey($legs);
+    }
+
+    /**
+     * @param Connection $connection
+     * @return bool
+     */
+    public function requiresInterchangeWith(Connection $connection) {
+        $lastLeg = end($this->legs);
+
+        return $lastLeg->requiresInterchangeWith($connection);
     }
 }

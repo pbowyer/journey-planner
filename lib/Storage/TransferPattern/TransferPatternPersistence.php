@@ -56,7 +56,6 @@ class TransferPatternPersistence {
         $insertPattern = $db->prepare("INSERT INTO transfer_pattern VALUES (null, ?, ?, ?, ?, ?)");
         $insertLegSQL = $db->prepare("INSERT INTO transfer_pattern_leg VALUES (null, ?, ?, ?)");
         $existingPatterns = $this->getExistingPatterns($db, $station);
-
         foreach ($this->getTreeBuilders() as $treeBuilder) {
             foreach (self::HOURS as $hour) {
                 error_log("Starting {$station} at ".gmdate("H:i", strtotime("1970-01-01 {$hour} UTC")));

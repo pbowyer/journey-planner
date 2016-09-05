@@ -52,4 +52,10 @@ abstract class Connection {
      * @return int
      */
     abstract function getDuration();
+
+    /**
+     * @param int $time
+     * @return bool
+     */
+    abstract function isAvailableAt($time);
 }

@@ -34,7 +34,7 @@ class Leg extends Connection {
      * @return boolean
      */
     public function requiresInterchangeWith(Connection $connection) {
-        return true;
+        return $this->connections[0]->requiresInterchangeWith($connection);
     }
 
     /**
@@ -97,5 +97,13 @@ class Leg extends Connection {
     public function getOperator() {
         return $this->connections[0]->getOperator();
     }
-    
+
+    /**
+     * @param $time
+     * @return bool
+     */
+    public function isAvailableAt($time) {
+        return $this->getDepartureTime() >= $time;
+    }
+
 }

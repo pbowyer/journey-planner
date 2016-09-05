@@ -72,4 +72,12 @@ class TimetableConnection extends Connection {
     public function requiresInterchangeWith(Connection $connection) {
         return $connection instanceof NonTimetableConnection || $this->service != $connection->getService();
     }
+
+    /**
+     * @param $time
+     * @return bool
+     */
+    public function isAvailableAt($time) {
+        return $this->departureTime >= $time;
+    }
 }
