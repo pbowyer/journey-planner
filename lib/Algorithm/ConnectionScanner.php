@@ -50,8 +50,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      */
     private $interchangeTimes;
 
-    private $connectionsTo;
-
     /**
      * @param array $timetable
      * @param array $nonTimetable
@@ -102,7 +100,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     private function getJourney($origin, $destination, $departureTime) {
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
-        $this->connectionsTo = [];
 
         $this->setFastestConnections($origin, $destination);
 
@@ -137,26 +134,12 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
                 $seenDestination = $seenDestination || $connection->getDestination() === $finalDestination;
             }
 
-            $this->storeConnectionTo($connection);
-
             // if this connection departs after the earliest arrival at the destination no connection
             // after will ever be faster so we can just return
             if ($seenDestination && $connection->getDepartureTime() > $this->arrivals[$finalDestination]) {
                 return;
             }
         }
-    }
-
-    private function storeConnectionTo(TimetableConnection $connection) {
-        if (!isset($this->connectionsTo[$connection->getOrigin()])) {
-            $this->connectionsTo[$connection->getOrigin()] = [];
-        }
-
-        if (!isset($this->connectionsTo[$connection->getOrigin()][$connection->getDestination()])) {
-            $this->connectionsTo[$connection->getOrigin()][$connection->getDestination()] = [];
-        }
-
-        $this->connectionsTo[$connection->getOrigin()][$connection->getDestination()][] = $connection;
     }
 
     private function canGetToThisConnection(TimetableConnection $connection) {
@@ -177,7 +160,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
             return $noExistingConnection || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
         }
         else if ($connection instanceof TimetableConnection) {
-            return $noExistingConnection || $this->arrivals[$connection->getDestination()] > $connection->getArrivalTime();
+            return $noExistingConnection || $this->arrivals[$connection->getDestination()] >= $connection->getArrivalTime();
         }
         
         throw new PlanningException("Unknown connection type " . get_class($connection));
@@ -225,9 +208,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
         while (isset($this->connections[$destination])) {
             $thisConnection = $this->connections[$destination];
-            if ($previousConnection instanceof TimetableConnection && $thisConnection instanceof TimetableConnection) {
-                $thisConnection = $this->getLatestDepartureTo($thisConnection, $previousConnection);
-            }
+
             if ($previousConnection && $previousConnection->requiresInterchangeWith($thisConnection)) {
                 $legs[] = new Leg(array_reverse($callingPoints));
                 $callingPoints = [];
@@ -249,33 +230,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     }
 
     /**
-     * Return the connection that departs the latest but can still make the next connection
-     *
-     * @param TimetableConnection $originalConnection
-     * @param TimetableConnection $nextConnection
-     * @return TimetableConnection
-     */
-    private function getLatestDepartureTo(TimetableConnection $originalConnection, TimetableConnection $nextConnection) {
-        $latest = $originalConnection;
-        $comparableConnections = $this->connectionsTo[$originalConnection->getOrigin()][$originalConnection->getDestination()];
-
-        /** @var TimetableConnection $connection */
-        foreach ($comparableConnections as $connection) {
-            $requiresChange = $nextConnection->requiresInterchangeWith($connection);
-            $interchangeTime = $requiresChange && isset($this->interchangeTimes[$connection->getOrigin()]) ? $this->interchangeTimes[$connection->getOrigin()] : 0;
-            $arrivesByTargetTime = $connection->getArrivalTime() <= $nextConnection->getDepartureTime() - $interchangeTime;
-            $departsLater = $connection->getDepartureTime() > $latest->getDepartureTime();
-
-            if ($arrivesByTargetTime && $departsLater) {
-                $latest = $connection;
-            }
-        }
-
-        return $latest;
-    }
-
-
-    /**
      * Slightly modified version of the CSA that returns the shortest journeys
      * to each station from the given origin.
      *
@@ -289,7 +243,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         // storage for the optimal results
         $bestJourneys = [];
         // filter out non timetable connection only journeys
-//        $nextDepartureTime = PHP_INT_MAX;
+        $nextDepartureTime = PHP_INT_MAX;
 
         foreach ($this->arrivals as $destination => $time) {
             $legs = $this->getLegsFromConnections($origin, $destination);
@@ -297,17 +251,14 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
             if (count($legs) > 0) {
                 $journey = new Journey($legs);
                 $bestJourneys[$destination] = [$time => $journey];
-//                $departureTime = $journey->getDepartureTime();
-//                $nextDepartureTime = $departureTime > 0 ? min($nextDepartureTime, $departureTime) : $nextDepartureTime;
+                $departureTime = $journey->getDepartureTime();
+                $nextDepartureTime = $departureTime > 0 ? min($nextDepartureTime, $departureTime) : $nextDepartureTime;
             }
         }
 
         while (count($this->timetable) > 0) {
-            $departureTime += 300;
-            $this->getEarliestArrivalTree($origin, $departureTime);
-
-//            $this->getEarliestArrivalTree($origin, $departureTime + 1);
-//            $nextDepartureTime = PHP_INT_MAX;
+            $this->getEarliestArrivalTree($origin, $nextDepartureTime + 1);
+            $nextDepartureTime = PHP_INT_MAX;
 
             // foreach of the not yet optimal journeys
             foreach ($this->arrivals as $destination => $time) {
@@ -315,8 +266,8 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
                 if (count($legs) > 0) {
                     $journey = new Journey($legs);
-//                    $departureTime = $journey->getDepartureTime();
-//                    $nextDepartureTime = $departureTime > 0 ? min($nextDepartureTime, $departureTime) : $nextDepartureTime;
+                    $departureTime = $journey->getDepartureTime();
+                    $nextDepartureTime = $departureTime > 0 ? min($nextDepartureTime, $departureTime) : $nextDepartureTime;
 
                     $bestJourneys[$destination][$time] = $journey;
                 }
@@ -329,7 +280,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     private function getEarliestArrivalTree($origin, $departureTime) {
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
-        $this->connectionsTo = [];
 
         $this->setAllFastestConnections($origin);
         unset($this->arrivals[$origin]);
@@ -358,10 +308,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
                 $this->checkForBetterNonTimetableConnections($connection->getDestination(), $connection->getArrivalTime());
             }
-
-            $this->storeConnectionTo($connection);
         }
-
     }
 
 }

@@ -70,6 +70,6 @@ class TimetableConnection extends Connection {
      * @return boolean
      */
     public function requiresInterchangeWith(Connection $connection) {
-        return $connection instanceof NonTimetableConnection || $this->service != $connection->getService();
+        return $connection instanceof NonTimetableConnection || $this->service !== $connection->getService();
     }
 }
