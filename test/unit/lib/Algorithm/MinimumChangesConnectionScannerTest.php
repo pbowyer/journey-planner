@@ -35,7 +35,6 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testGetShortestPathTreeWithChange() {
-        return;
         $timetable = [
             new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
             new TimetableConnection("ORP", "LBG", 1000, 1240, "SE1001", "LN"),
@@ -58,23 +57,35 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
-            "WAE" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
-            ]),
-            "LBG" => new Journey([
-                new Leg([new TimetableConnection("ORP", "LBG", 1000, 1240, "SE1001", "LN")]),
-            ]),
-            "CHX" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
-                         new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
-            ])
+            "WAE" => [
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
+                ]),
+                1120 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1120, "SE3000", "LN")])
+                ]),
+            ],
+            "LBG" => [
+                1240 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "LBG", 1000, 1240, "SE1001", "LN")]),
+                ]),
+                1140 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1120, "SE3000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 20)]),
+                ]),
+            ],
+            "CHX" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
+                ])
+            ]
         ];
 
         $this->assertEquals($expectedTree, $tree);
     }
 
     public function testTransferPatternsWithTransfer() {
-        return;
         $timetable = [
             new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN"),
@@ -96,17 +107,30 @@ class MinimumChangesConnectionScannerTest extends PHPUnit_Framework_TestCase {
         $scanner = new MinimumChangesConnectionScanner($timetable, $nonTimetable, $interchangeTimes);
         $tree = $scanner->getShortestPathTree("ORP", 900);
         $expectedTree = [
-            "WAE" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
-            ]),
-            "LBG" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
-                new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
-            ]),
-            "CHX" => new Journey([
-                new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
-                    new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
-            ])
+            "WAE" => [
+                1040 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")])
+                ]),
+                1140 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")])
+                ])
+            ],
+            "LBG" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
+                ]),
+                1145 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1100, 1140, "SE3000", "LN")]),
+                    new Leg([new NonTimetableConnection("WAE", "LBG", 5)]),
+                ])
+            ],
+            "CHX" => [
+                1045 => new Journey([
+                    new Leg([new TimetableConnection("ORP", "WAE", 1000, 1040, "SE1000", "LN"),
+                             new TimetableConnection("WAE", "CHX", 1040, 1045, "SE1000", "LN")])
+                ])
+            ]
         ];
 
         $this->assertEquals($expectedTree, $tree);

@@ -51,7 +51,7 @@ class TransferPatternPersistence {
                     continue;
                 }
 
-                error_log("Found {$hash}");
+//                error_log("Found {$hash}");
                 $duration = $pattern->getDuration();
                 $insertPattern->execute([$station, $destination, $duration, $scanDate . ' ' . gmdate("H:i", $pattern->getDepartureTime()), $scanDate]);
                 $patternId = $db->lastInsertId();

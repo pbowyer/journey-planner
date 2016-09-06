@@ -97,7 +97,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * @param $departureTime
      * @return Journey|null
      */
-    private function getJourney($origin, $destination, $departureTime) {
+    protected function getJourney($origin, $destination, $departureTime) {
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
 
@@ -278,7 +278,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
         return $bestJourneys;
     }
 
-    private function getEarliestArrivalTree($origin, $departureTime) {
+    protected function getEarliestArrivalTree($origin, $departureTime) {
         $this->arrivals = [$origin => $departureTime];
         $this->connections = [];
 
