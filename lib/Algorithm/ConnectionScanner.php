@@ -154,13 +154,14 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
     }
 
     protected function thisConnectionIsBetter(Connection $connection) {
-        $noExistingConnection = !isset($this->arrivals[$connection->getDestination()]);
-
-        if ($connection instanceof NonTimetableConnection) {
-            return $noExistingConnection || $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
+        if (!isset($this->arrivals[$connection->getDestination()])) {
+            return true;
+        }
+        else if ($connection instanceof NonTimetableConnection) {
+            return $this->arrivals[$connection->getDestination()] > $this->arrivals[$connection->getOrigin()] + $connection->getDuration();
         }
         else if ($connection instanceof TimetableConnection) {
-            return $noExistingConnection || $this->arrivals[$connection->getDestination()] >= $connection->getArrivalTime();
+            return $this->arrivals[$connection->getDestination()] >= $connection->getArrivalTime();
         }
         
         throw new PlanningException("Unknown connection type " . get_class($connection));
