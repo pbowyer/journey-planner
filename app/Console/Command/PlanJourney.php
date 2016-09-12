@@ -119,7 +119,12 @@ class PlanJourney extends ConsoleCommand {
             return $scanner->getJourneys($origin, $destination, strtotime('1970-01-01 '.gmdate('H:i:s', $targetTime).' UTC'));
         });
 
-        $this->displayRoute($out, $locations, $route[0]);
+        if (count($route) === 0) {
+            $out->writeln("No route found.");
+        }
+        else {
+            $this->displayRoute($out, $locations, $route[0]);
+        }
 
         $this->outputMemoryUsage($out);
         $out->writeln("Connections: ".count($timetableConnections));

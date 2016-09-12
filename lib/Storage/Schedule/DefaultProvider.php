@@ -39,7 +39,7 @@ class DefaultProvider implements ScheduleProvider {
             WHERE departure_time >= :startTime
             AND start_date <= :startDate AND end_date >= :startDate
             AND {$dow} = 1
-            ORDER BY arrivalTime
+            ORDER BY arrival_time
         ");
 
         $stmt->execute([
@@ -56,7 +56,8 @@ class DefaultProvider implements ScheduleProvider {
                 $row["departure_time"],
                 $row["arrival_time"],
                 $row["service"],
-                $row["operator"]
+                $row["operator"],
+                $row["mode"]
             );
         }
 
@@ -91,15 +92,19 @@ class DefaultProvider implements ScheduleProvider {
         $results = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if (isset($results[$row["origin"]])) {
-                $results[$row["origin"]] = [];
-            }
-
-            $results[$row["origin"]][] = new NonTimetableConnection(
+            $connection = new NonTimetableConnection(
                 $row["origin"],
                 $row["destination"],
-                $row["duration"]
+                $row["duration"],
+                $row["mode"]
             );
+
+            if (isset($results[$row["origin"]])) {
+                $results[$row["origin"]][] = $connection;
+            }
+            else {
+                $results[$row["origin"]] = [$connection];
+            }
         }
 
         return $results;
