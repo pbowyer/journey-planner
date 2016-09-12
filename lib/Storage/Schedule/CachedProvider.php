@@ -136,19 +136,19 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
               dept.service,
               dept.origin,
               arrv.destination,
-              TIME_TO_SEC(dept.departureTime) as departureTime,
-              TIME_TO_SEC(arrv.arrivalTime) as arrivalTime,
+              TIME_TO_SEC(dept.departure_time) as departure_time,
+              TIME_TO_SEC(arrv.arrival_time) as arrival_time,
               arrv.operator,
               arrv.type
             FROM timetable_connection dept
             JOIN timetable_connection arrv ON dept.service = arrv.service
-            WHERE arrv.arrivalTime > dept.departureTime
+            WHERE arrv.arrival_time > dept.departure_time
             AND dept.origin = :origin
             AND arrv.destination = :destination
-            AND dept.departureTime >= :departureTime
-            AND dept.startDate <= :startDate AND dept.endDate >= :startDate
+            AND dept.departure_time >= :departureTime
+            AND dept.start_date <= :startDate AND dept.end_date >= :startDate
             AND dept.{$dow} = 1
-            ORDER BY arrv.arrivalTime, dept.service
+            ORDER BY arrv.arrival_time, dept.service
         ");
 
         $stmt->execute([

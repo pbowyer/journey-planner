@@ -35,8 +35,8 @@ class TransferPatternScheduleFactory {
             $connections[] = new TimetableConnection(
                 $row["origin"],
                 $row["destination"],
-                $row["departureTime"],
-                $row["arrivalTime"],
+                $row["departure_time"],
+                $row["arrival_time"],
                 $row["service"],
                 $row["operator"],
                 $row["type"]

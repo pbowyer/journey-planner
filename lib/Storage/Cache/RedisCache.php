@@ -9,6 +9,8 @@ use Redis;
  */
 class RedisCache implements Cache {
 
+    const DB_INDEX = 1;
+
     /**
      * @var Redis
      */

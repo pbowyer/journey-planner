@@ -34,10 +34,10 @@ class DefaultProvider implements ScheduleProvider {
         $dow = lcfirst(gmdate('l', $startTimestamp));
 
         $stmt = $this->db->prepare("
-            SELECT TIME_TO_SEC(departureTime) as departureTime, TIME_TO_SEC(arrivalTime) as arrivalTime, origin, destination, service, operator, type as mode
+            SELECT TIME_TO_SEC(departure_time) as departure_time, TIME_TO_SEC(arrival_time) as arrival_time, origin, destination, service, operator, type as mode
             FROM timetable_connection
-            WHERE departureTime >= :startTime
-            AND startDate <= :startDate AND endDate >= :startDate
+            WHERE departure_time >= :startTime
+            AND start_date <= :startDate AND end_date >= :startDate
             AND {$dow} = 1
             ORDER BY arrivalTime
         ");
@@ -47,7 +47,20 @@ class DefaultProvider implements ScheduleProvider {
             'startDate' => gmdate("Y-m-d", $startTimestamp),
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\TimetableConnection', ['','','','','','']);
+        $results = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[] = new TimetableConnection(
+                $row["origin"],
+                $row["destination"],
+                $row["departure_time"],
+                $row["arrival_time"],
+                $row["service"],
+                $row["operator"]
+            );
+        }
+
+        return $results;
     }
 
     /**
@@ -63,8 +76,8 @@ class DefaultProvider implements ScheduleProvider {
                 to_stop_id as destination, 
                 link_secs as duration, 
                 mode, 
-                TIME_TO_SEC(start_time) as startTime,
-                TIME_TO_SEC(end_time) as endTime
+                TIME_TO_SEC(start_time) as start_time,
+                TIME_TO_SEC(end_time) as end_time
             FROM links
             WHERE start_date <= :targetDate AND end_date >= :targetDate
             AND {$dow} = 1
@@ -77,13 +90,16 @@ class DefaultProvider implements ScheduleProvider {
 
         $results = [];
 
-        foreach ($stmt->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'JourneyPlanner\Lib\Network\NonTimetableConnection', ['','','','','']) as $c) {
-            if (isset($results[$c->getOrigin()])) {
-                $results[$c->getOrigin()][] = $c;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (isset($results[$row["origin"]])) {
+                $results[$row["origin"]] = [];
             }
-            else {
-                $results[$c->getOrigin()] = [$c];
-            }
+
+            $results[$row["origin"]][] = new NonTimetableConnection(
+                $row["origin"],
+                $row["destination"],
+                $row["duration"]
+            );
         }
 
         return $results;
@@ -119,21 +135,21 @@ class DefaultProvider implements ScheduleProvider {
               dept.service,
               dept.origin,
               arrv.destination,
-              TIME_TO_SEC(dept.departureTime) as departureTime,
-              TIME_TO_SEC(arrv.arrivalTime) as arrivalTime,
+              TIME_TO_SEC(dept.departure_time) as departure_time,
+              TIME_TO_SEC(arrv.arrival_time) as arrival_time,
               arrv.operator,
               arrv.type
             FROM transfer_pattern
             JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
             JOIN timetable_connection dept ON leg.origin = dept.origin
             JOIN timetable_connection arrv ON leg.destination = arrv.destination AND dept.service = arrv.service
-            WHERE arrv.arrivalTime > dept.departureTime
+            WHERE arrv.arrival_time > dept.departure_time
             AND transfer_pattern.origin = :origin
             AND transfer_pattern.destination = :destination
-            AND dept.departureTime >= :departureTime
-            AND dept.startDate <= :startDate AND dept.endDate >= :startDate
+            AND dept.departure_time >= :departureTime
+            AND dept.start_date <= :startDate AND dept.endDate >= :startDate
             AND dept.{$dow} = 1
-            ORDER BY leg.transfer_pattern, leg.id, arrv.arrivalTime, dept.service
+            ORDER BY leg.transfer_pattern, leg.id, arrv.arrival_time, dept.service
         ");
 
         $stmt->execute([

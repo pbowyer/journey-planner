@@ -77,6 +77,7 @@ class Container extends PimpleContainer {
         $this['cache.redis'] = function () {
             $redis = new Redis();
             $redis->connect('127.0.0.1');
+            $redis->select(RedisCache::DB_INDEX);
 
             return $redis;
         };
