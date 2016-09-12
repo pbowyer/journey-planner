@@ -1,0 +1,32 @@
+{
+  "name": "journey-planner",
+  "version": "1.0.0",
+  "description": "GTFS based journey planner",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "uk-rail-import": "^2.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linusnorton/journey-planner.git"
+  },
+  "keywords": [
+    "uk",
+    "rail",
+    "gtfs",
+    "travel",
+    "transit"
+  ],
+  "author": "Linus Norton",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/linusnorton/journey-planner/issues"
+  },
+  "homepage": "https://github.com/linusnorton/journey-planner#readme"
+}
