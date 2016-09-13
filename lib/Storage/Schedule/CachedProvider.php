@@ -2,6 +2,7 @@
 
 namespace JourneyPlanner\Lib\Storage\Schedule;
 
+use JourneyPlanner\Lib\Network\NonTimetableConnection;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 use JourneyPlanner\Lib\Storage\Cache\Cache;
 use JourneyPlanner\Lib\Storage\Schedule\DefaultProvider;
@@ -15,7 +16,9 @@ use PDO;
 class CachedProvider extends DefaultProvider implements ScheduleProvider {
 
     const TP_CACHE_KEY = "|TRANSFER_PATTERN|",
-          TT_CACHE_KEY = "|TIMETABLE|";
+          TT_CACHE_KEY = "|TIMETABLE|",
+          NT_CACHE_KEY = "|NON_TIMETABLE|",
+          IN_CACHE_KEY = "|INTERCHANGE|";
 
     const NUM_PATTERNS = 10;
 
@@ -161,6 +164,39 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->cache->setObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp.$dow, $result);
+
+        return $result;
+    }
+
+    /**
+     * @param int $targetTimestamp
+     * @return NonTimetableConnection[]
+     */
+    public function getNonTimetableConnections($targetTimestamp) {
+        $result = $this->cache->getObject(self::NT_CACHE_KEY.$targetTimestamp);
+
+        if ($result !== false) {
+            return $result;
+        }
+
+        $result = parent::getNonTimetableConnections($targetTimestamp);
+        $this->cache->setObject(self::NT_CACHE_KEY.$targetTimestamp, $result);
+
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInterchangeTimes() {
+        $result = $this->cache->getObject(self::IN_CACHE_KEY);
+
+        if ($result !== false) {
+            return $result;
+        }
+
+        $result = parent::getInterchangeTimes();
+        $this->cache->setObject(self::IN_CACHE_KEY, $result);
 
         return $result;
     }
