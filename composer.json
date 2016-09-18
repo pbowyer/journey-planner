@@ -21,8 +21,7 @@
     "symfony/console": "^3.0",
     "kriswallsmith/spork": "^0.3.0",
     "silex/silex": "^2.0",
-    "bdelespierre/php-kmeans": "dev-master",
-    "open-track/fares-service": "dev-master@dev"
+    "bdelespierre/php-kmeans": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.4"
