@@ -1,5 +1,5 @@
 {
-  "name": "linusnorton/journey-planner",
+  "name": "open-track/journey-planner",
   "description": "Online Journey Planner",
   "license": "GNU GPLv3",
   "authors": [
@@ -21,7 +21,8 @@
     "symfony/console": "^3.0",
     "kriswallsmith/spork": "^0.3.0",
     "silex/silex": "^2.0",
-    "bdelespierre/php-kmeans": "dev-master"
+    "bdelespierre/php-kmeans": "dev-master",
+    "open-track/fares-service": "dev-master@dev"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.4"
