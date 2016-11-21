@@ -114,11 +114,11 @@ class DefaultProvider implements ScheduleProvider {
      * @return array
      */
     public function getInterchangeTimes() {
-        $stmt = $this->db->query("SELECT station, duration FROM interchange");
+        $stmt = $this->db->query("SELECT from_stop_id, min_transfer_time FROM transfers");
         $results = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $results[$row['station']] = $row['duration'];
+            $results[$row['from_stop_id']] = $row['min_transfer_time'];
         }
 
         return $results;

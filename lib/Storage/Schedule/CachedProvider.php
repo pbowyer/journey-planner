@@ -2,7 +2,10 @@
 
 namespace JourneyPlanner\Lib\Storage\Schedule;
 
+use JourneyPlanner\Lib\Network\Leg;
 use JourneyPlanner\Lib\Network\NonTimetableConnection;
+use JourneyPlanner\Lib\Network\TimetableConnection;
+use JourneyPlanner\Lib\Network\TransferPatternLeg;
 use JourneyPlanner\Lib\Network\TransferPatternSchedule;
 use JourneyPlanner\Lib\Storage\Cache\Cache;
 use JourneyPlanner\Lib\Storage\Schedule\DefaultProvider;
@@ -55,31 +58,33 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
     public function getTimetable($origin, $destination, $startTimestamp) {
         $dow = lcfirst(gmdate('l', $startTimestamp));
         $results = [];
-        $patternCount = 0;
-        $patternId = null;
 
-        foreach ($this->getTransferPatterns($origin, $destination) as $row) {
-            $timetable = $this->getScheduleSegment($row["origin"], $row["destination"], $startTimestamp, $dow);
+        foreach ($this->getTransferPatterns($origin, $destination) as $transferPattern) {
+            $scheduleLegs = $this->getTransferPatternLeg($transferPattern, $startTimestamp, $dow);
 
-            foreach ($timetable as $result) {
-                $result["transfer_pattern"] = $row["transfer_pattern"];
-                $result["transfer_leg"] = $row["leg"];
-
-                $results[] = $result;
-            }
-
-            if ($patternId !== $row["transfer_pattern"]) {
-                $patternId = $row["transfer_pattern"];
-
-                if (++$patternCount > self::NUM_PATTERNS) {
-                    break;
-                }
+            if (count($scheduleLegs)) {
+                $results[] = new TransferPatternSchedule($scheduleLegs);
             }
         }
 
-        $factory = new TransferPatternScheduleFactory();
 
-        return $factory->getSchedulesFromTimetable($results);
+        return $results;
+    }
+
+    private function getTransferPatternLeg(array $transferPattern, $startTimestamp, $dow) {
+        $pattern = str_split($transferPattern["id"], 3);
+        $legLength = count($pattern);
+        $patternLegs = [];
+
+        for ($i = 2; $i < $legLength; $i += 2) {
+            $legs = $this->getScheduleSegment($pattern[$i], $pattern[$i + 1], $startTimestamp, $dow);
+
+            if (count($legs) > 0) {
+                $patternLegs[] = new TransferPatternLeg($legs);
+            }
+        }
+
+        return $patternLegs;
     }
 
     /**
@@ -98,28 +103,15 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
             SELECT * FROM pattern
             WHERE origin = :origin
             AND destination = :destination
-        ");
+            LIMIT " . self::NUM_PATTERNS
+        );
 
         $stmt->execute([
             'origin' => $origin,
             'destination' => $destination
         ]);
 
-        $result = [];
-
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $legs = str_split($row["id"], 3);
-            $legLength = count($legs);
-
-            for ($i = 2; $i < $legLength; $i += 2) {
-                $result[] = [
-                    "origin" => $legs[$i],
-                    "destination" => $legs[$i+1],
-                    "transfer_pattern" => $row["id"],
-                    "leg" => $i
-                ];
-            }
-        }
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->cache->setObject(self::TP_CACHE_KEY.$origin.$destination, $result);
 
@@ -134,40 +126,54 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
      * @return array
      */
     private function getScheduleSegment($origin, $destination, $startTimestamp, $dow) {
-        $cachedValue = $this->cache->getObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp);
+        $date = gmdate("Y-m-d", $startTimestamp);
+        $cachedValue = $this->cache->getObject(self::TT_CACHE_KEY.$origin.$destination.$date);
 
         if ($cachedValue !== false) {
             return $cachedValue;
         }
 
-        $stmt = $this->db->prepare("
+        $stmt = $this->db->prepare("            
             SELECT 
-              dept.service,
-              dept.origin,
-              arrv.destination,
-              TIME_TO_SEC(dept.departure_time) as departure_time,
-              TIME_TO_SEC(arrv.arrival_time) as arrival_time,
-              arrv.operator,
-              arrv.type
-            FROM timetable_connection dept
-            JOIN timetable_connection arrv ON dept.service = arrv.service
-            WHERE arrv.arrival_time > dept.departure_time
-            AND dept.origin = :origin
-            AND arrv.destination = :destination
-            AND dept.departure_time >= :departureTime
-            AND dept.start_date <= :startDate AND dept.end_date >= :startDate
-            AND dept.{$dow} = 1
-            ORDER BY arrv.arrival_time, dept.service
+                train_uid as service,
+                ostation.parent_station as origin, 
+                dstation.parent_station as destination, 
+                TIME_TO_SEC(dept.departure_time) as departure_time, 
+                TIME_TO_SEC(arrv.arrival_time) as arrival_time,
+                atoc_code AS operator,
+                IF (train_category='BS' OR train_category='BR', 'bus', 'train') AS type
+            FROM stop_times AS dept
+            JOIN stops AS ostation ON dept.stop_id = ostation.stop_id
+            JOIN stop_times AS arrv ON arrv.trip_id = dept.trip_id AND arrv.stop_sequence > dept.stop_sequence
+            JOIN stops AS dstation ON arrv.stop_id = dstation.stop_id
+            JOIN trips ON dept.trip_id = trips.trip_id
+            JOIN calendar USING(service_id)
+            WHERE ostation.parent_station = :origin
+            AND dstation.parent_station = :destination
+            AND :startDate BETWEEN start_date AND end_date
+            AND {$dow} = 1
+            ORDER BY arrv.arrival_time, dept.trip_id, dept.stop_sequence            
         ");
 
         $stmt->execute([
-            'departureTime' => gmdate("H:i:s", $startTimestamp),
             'startDate' => gmdate("Y-m-d", $startTimestamp),
             'origin' => $origin,
             'destination' => $destination
         ]);
 
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+
+        while ($service = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $result[] = new Leg([new TimetableConnection(
+                $service["origin"],
+                $service["destination"],
+                $service["departure_time"],
+                $service["arrival_time"],
+                $service["service"],
+                $service["operator"],
+                $service["type"]
+            )]);
+        }
 
         $this->cache->setObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp.$dow, $result);
 
