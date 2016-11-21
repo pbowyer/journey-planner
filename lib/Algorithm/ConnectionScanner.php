@@ -194,10 +194,6 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
      * Given a Hash Map of fastest connections trace back the route from the target
      * destination to the origin. If no route is found an empty array is returned.
      *
-     * This method will also compare all connections along the way to ensure the
-     * latest possible depart is selected, assuming it still arrives at the
-     * earliest arrival time.
-     *
      * @param  string $origin
      * @param  string $destination
      * @return Leg[]
@@ -217,7 +213,7 @@ class ConnectionScanner implements JourneyPlanner, MinimumSpanningTreeGenerator 
 
             $callingPoints[] = $thisConnection;
             $previousConnection = $thisConnection;
-            $destination = $this->connections[$destination]->getOrigin();
+            $destination = $thisConnection->getOrigin();
         }
 
         // if we found a route back to the origin

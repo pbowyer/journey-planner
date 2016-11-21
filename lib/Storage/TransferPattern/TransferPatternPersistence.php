@@ -51,7 +51,7 @@ class TransferPatternPersistence {
                     continue;
                 }
 
-//                error_log("Found {$hash}");
+//                error_log("Found {$stoppingPattern}");
                 $duration = $pattern->getDuration();
                 $insertPattern->execute([$station, $destination, $duration, $scanDate . ' ' . gmdate("H:i", $pattern->getDepartureTime()), $scanDate]);
                 $patternId = $db->lastInsertId();
@@ -73,7 +73,7 @@ class TransferPatternPersistence {
      */
     private function getExistingPatterns(PDO $db, $station) {
         $stmt = $db->prepare("
-          SELECT concat(tp.origin, tp.destination, group_concat(leg.origin, leg.destination separator '')) as hash, journey_duration
+          SELECT concat(tp.origin, tp.destination, group_concat(leg.origin, leg.destination separator '')) as stoppingPattern, journey_duration
           FROM transfer_pattern tp 
           JOIN transfer_pattern_leg leg ON leg.transfer_pattern = tp.id
           WHERE tp.origin = ? 
@@ -85,7 +85,7 @@ class TransferPatternPersistence {
         $existingPatterns = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $existingPatterns[$row["hash"]] = $row["journey_duration"];
+            $existingPatterns[$row["stoppingPattern"]] = $row["journey_duration"];
         }
 
         return $existingPatterns;

@@ -69,10 +69,9 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
             }
 
             if ($patternId !== $row["transfer_pattern"]) {
-                $patternCount++;
                 $patternId = $row["transfer_pattern"];
 
-                if ($patternCount > self::NUM_PATTERNS) {
+                if (++$patternCount > self::NUM_PATTERNS) {
                     break;
                 }
             }
@@ -96,16 +95,9 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         }
 
         $stmt = $this->db->prepare("
-            SELECT 
-              leg.transfer_pattern as transfer_pattern,
-              leg.id as leg,
-              leg.origin,
-              leg.destination
-            FROM transfer_pattern
-            JOIN transfer_pattern_leg leg ON transfer_pattern.id = leg.transfer_pattern
-            WHERE transfer_pattern.origin = :origin
-            AND transfer_pattern.destination = :destination
-            ORDER BY transfer_pattern.journey_duration, leg.transfer_pattern, leg.id
+            SELECT * FROM pattern
+            WHERE origin = :origin
+            AND destination = :destination
         ");
 
         $stmt->execute([
@@ -113,7 +105,21 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
             'destination' => $destination
         ]);
 
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $legs = str_split($row["id"], 3);
+            $legLength = count($legs);
+
+            for ($i = 2; $i < $legLength; $i += 2) {
+                $result[] = [
+                    "origin" => $legs[$i],
+                    "destination" => $legs[$i+1],
+                    "transfer_pattern" => $row["id"],
+                    "leg" => $i
+                ];
+            }
+        }
 
         $this->cache->setObject(self::TP_CACHE_KEY.$origin.$destination, $result);
 
