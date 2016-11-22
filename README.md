@@ -21,11 +21,12 @@ Instead of this you may use the [traintickets.to development environment](https:
 
 ## Set up
 
-The journey planner depends on a GTFS data set and some pre-processed transfer patterns. Calculating the transfer patterns can take between 2-8 hours depending on the number of cores available.
+The journey planner depends on a GTFS data set and some pre-processed transfer patterns. You can run the import script below and then use the [transfer pattern generator](https://www.github.com/open-track/transfer-pattern-generator-scala) tool to create the transfer patterns, or you download a dump from `https://s3-eu-west-1.amazonaws.com/traintickets.to/database/dump.sql.gz`
 
 ```
+composer install
+npm install
 ./bin/import-data
-./bin/find-transfer-patterns
 ```
 
 ## CLI
@@ -38,7 +39,7 @@ The date is optional.
 
 ## Web interface
 
-You will need to set up a virtual host for the API. If you are using the [traintickets.to development environment](https://github.com/linusnorton/traintickets.to) this is typically `http://api-ttt.local/`.
+You will need to set up a virtual host for the API. If you are using the [traintickets.to development environment](https://github.com/open-track/ansible) this is typically `http://api-ttt.local/`.
 
 ```
 curl "ttt.local/api/journey-plan?origin=PDW&destination=MAR&date=2016-07-25T09:00"
@@ -62,14 +63,6 @@ print_r($journeys);
 ```
 ./vendor/bin/phpunit
 ```
-
-## Notes
-
-Services that start after midnight are not currently considered.
-
-London Underground is a bit of a blackhole and is covered by "transfers" as opposed to individual tube trips.
-
-The connection scan algorithm tends is geared towards speed and tends to chuck people of trains as soon as possible in order to get them to their destination. A more sensible approach would be to use the largest available major station.
 
 ## Contributing
 

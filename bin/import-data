@@ -1,12 +1,14 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ "$DATABASE_PASSWORD" != "" ]
+
+if [ "$DATABASE_USERNAME" == "" ]
 then
-    DB_PASS="-p$DATABASE_PASSWORD"
+    export DATABASE_USERNAME=root
 fi
 
 redis-cli select 1 > /dev/null
 redis-cli flushdb > /dev/null
-$DIR/../node_modules/.bin/uk-rail-import --timetable | mysql -u $DATABASE_USERNAME -h $DATABASE_HOSTNAME $DB_PASS ojp
-$DIR/../node_modules/.bin/uk-rail-import --convert-timetable | mysql -u $DATABASE_USERNAME -h $DATABASE_HOSTNAME $DB_PASS ojp
+
+DATABASE_NAME=ojp $DIR/../node_modules/.bin/uk-rail-import --timetable
+DATABASE_NAME=ojp $DIR/../node_modules/.bin/uk-rail-import --timetable-clean
