@@ -6,9 +6,11 @@ use JourneyPlanner\App\Console\Command\AssignStationClusters;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Console;
+use JourneyPlanner\Lib\Storage\Cache\MemcachedCache;
 use JourneyPlanner\Lib\Storage\Schedule\CachedProvider;
 use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
 use JourneyPlanner\Lib\Storage\Cache\RedisCache;
+use Memcached;
 use PDO;
 use Pimple\Container as PimpleContainer;
 use Monolog\Logger;
@@ -82,8 +84,15 @@ class Container extends PimpleContainer {
             return $redis;
         };
 
+        $this['cache.memcached'] = function () {
+            $memcached = new Memcached();
+            $memcached->addServer('127.0.0.1', 11211);
+
+            return $memcached;
+        };
+
         $this['cache'] = function ($container) {
-            return new RedisCache($container['cache.redis']);
+            return new MemcachedCache($container['cache.memcached']);
         };
     }
 

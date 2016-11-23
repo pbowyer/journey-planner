@@ -7,8 +7,7 @@ then
     export DATABASE_USERNAME=root
 fi
 
-redis-cli select 1 > /dev/null
-redis-cli flushdb > /dev/null
+echo 'flush_all' | nc localhost 11211
 
 DATABASE_NAME=ojp $DIR/../node_modules/.bin/uk-rail-import --timetable
 DATABASE_NAME=ojp $DIR/../node_modules/.bin/uk-rail-import --timetable-clean
