@@ -59,7 +59,7 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         $dow = lcfirst(gmdate('l', $startTimestamp));
         $results = [];
 
-        foreach ($this->getTransferPatterns($origin, $destination) as $transferPattern) {
+        foreach ($this->getTransferPatterns($origin . $destination) as $transferPattern) {
             $scheduleLegs = $this->getTransferPatternLeg($transferPattern, $startTimestamp, $dow);
 
             if (count($scheduleLegs)) {
@@ -71,12 +71,12 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         return $results;
     }
 
-    private function getTransferPatternLeg(array $transferPattern, $startTimestamp, $dow) {
-        $pattern = str_split($transferPattern["id"], 3);
+    private function getTransferPatternLeg($transferPattern, $startTimestamp, $dow) {
+        $pattern = str_split($transferPattern, 3);
         $legLength = count($pattern);
         $patternLegs = [];
 
-        for ($i = 2; $i < $legLength; $i += 2) {
+        for ($i = 0; $i < $legLength; $i += 2) {
             $legs = $this->getScheduleSegment($pattern[$i], $pattern[$i + 1], $startTimestamp, $dow);
 
             if (count($legs) > 0) {
@@ -88,34 +88,13 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
     }
 
     /**
-     * @param $origin
-     * @param $destination
+     * @param $journey
      * @return array
      */
-    private function getTransferPatterns($origin, $destination) {
-        $cachedValue = $this->cache->getObject(self::TP_CACHE_KEY.$origin.$destination);
-
-        if ($cachedValue !== false) {
-            return $cachedValue;
-        }
-
-        $stmt = $this->db->prepare("
-            SELECT * FROM pattern
-            WHERE origin = :origin
-            AND destination = :destination
-            LIMIT " . self::NUM_PATTERNS
-        );
-
-        $stmt->execute([
-            'origin' => $origin,
-            'destination' => $destination
-        ]);
-
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $this->cache->setObject(self::TP_CACHE_KEY.$origin.$destination, $result);
-
-        return $result;
+    private function getTransferPatterns($journey) {
+        return $this->db->query(
+            "SELECT pattern FROM transfer_patterns WHERE journey = '{$journey}' LIMIT ".self::NUM_PATTERNS
+        )->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**

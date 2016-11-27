@@ -21,7 +21,9 @@ Instead of this you may use the [traintickets.to development environment](https:
 
 ## Set up
 
-The journey planner depends on a GTFS data set and some pre-processed transfer patterns. You can run the import script below and then use the [transfer pattern generator](https://www.github.com/open-track/transfer-pattern-generator-scala) tool to create the transfer patterns, or you download a dump from `https://s3-eu-west-1.amazonaws.com/traintickets.to/database/dump.sql.gz`
+If you are using the [traintickets.to development environment](https://github.com/open-track/ansible) you do not need to import anything and the API is available at `http://api-ttt.local/`.
+
+If you want to run it as a stand-alone journey planner you can run the import script below and then use the [transfer pattern generator](https://www.github.com/open-track/transfer-pattern-generator-scala) tool to create the transfer patterns. The transfer patterns take a while to create (30min~ on an 8 core machine) so you can download a dump of them from `https://s3-eu-west-1.amazonaws.com/traintickets.to/database/patterns.sql.gz`
 
 ```
 composer install
