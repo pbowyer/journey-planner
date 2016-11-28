@@ -92,8 +92,12 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
      * @return array
      */
     private function getTransferPatterns($journey) {
-        return $this->db->query(
-            "SELECT pattern FROM transfer_patterns WHERE journey = '{$journey}' LIMIT ".self::NUM_PATTERNS
+        return $this->db->query("
+          SELECT pattern 
+          FROM transfer_patterns 
+          WHERE journey = '{$journey}'
+          ORDER BY LENGTH(pattern) 
+          LIMIT ".self::NUM_PATTERNS
         )->fetchAll(PDO::FETCH_COLUMN);
     }
 
