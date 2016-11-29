@@ -57,10 +57,11 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
      */
     public function getTimetable($origin, $destination, $startTimestamp) {
         $dow = lcfirst(gmdate('l', $startTimestamp));
+        $date = gmdate("Y-m-d", $startTimestamp);
         $results = [];
 
         foreach ($this->getTransferPatterns($origin . $destination) as $transferPattern) {
-            $scheduleLegs = $this->getTransferPatternLeg($transferPattern, $startTimestamp, $dow);
+            $scheduleLegs = $this->getTransferPatternLeg($transferPattern, $date, $dow);
 
             if (count($scheduleLegs)) {
                 $results[] = new TransferPatternSchedule($scheduleLegs);
@@ -71,13 +72,13 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         return $results;
     }
 
-    private function getTransferPatternLeg($transferPattern, $startTimestamp, $dow) {
+    private function getTransferPatternLeg($transferPattern, $date, $dow) {
         $pattern = str_split($transferPattern, 3);
         $legLength = count($pattern);
         $patternLegs = [];
 
         for ($i = 0; $i < $legLength; $i += 2) {
-            $legs = $this->getScheduleSegment($pattern[$i], $pattern[$i + 1], $startTimestamp, $dow);
+            $legs = $this->getScheduleSegment($pattern[$i], $pattern[$i + 1], $date, $dow);
 
             if (count($legs) > 0) {
                 $patternLegs[] = new TransferPatternLeg($legs);
@@ -104,13 +105,13 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
     /**
      * @param $origin
      * @param $destination
-     * @param $startTimestamp
+     * @param $date
      * @param $dow
      * @return array
      */
-    private function getScheduleSegment($origin, $destination, $startTimestamp, $dow) {
-        $date = gmdate("Y-m-d", $startTimestamp);
-        $cachedValue = $this->cache->getObject(self::TT_CACHE_KEY.$origin.$destination.$date);
+    private function getScheduleSegment($origin, $destination, $date, $dow) {
+        $cacheKey = self::TT_CACHE_KEY.$origin.$destination.$date;
+        $cachedValue = $this->cache->getObject($cacheKey);
 
         if ($cachedValue !== false) {
             return $cachedValue;
@@ -139,7 +140,7 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
         ");
 
         $stmt->execute([
-            'startDate' => gmdate("Y-m-d", $startTimestamp),
+            'startDate' => $date,
             'origin' => $origin,
             'destination' => $destination
         ]);
@@ -158,7 +159,7 @@ class CachedProvider extends DefaultProvider implements ScheduleProvider {
             )]);
         }
 
-        $this->cache->setObject(self::TT_CACHE_KEY.$origin.$destination.$startTimestamp.$dow, $result);
+        $this->cache->setObject($cacheKey, $result);
 
         return $result;
     }
