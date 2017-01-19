@@ -2,17 +2,18 @@
 
 namespace JourneyPlanner\App\Api\View;
 
-use DateInterval;
-use JourneyPlanner\Lib\Network\Leg;
-use JourneyPlanner\Lib\Network\Journey;
+use JourneyPlanner\Lib\Journey\FixedLeg;
+use JourneyPlanner\Lib\Journey\Journey;
+use JourneyPlanner\Lib\Journey\Leg;
+use JourneyPlanner\Lib\Journey\TimetableLeg;
 use JsonSerializable;
 use stdClass;
 
+/**
+ * @author Linus Norton <linusnorton@gmail.com>
+ */
 class JourneyView implements JsonSerializable {
 
-    /**
-     * @var Journey
-     */
     private $journey;
 
     /**
@@ -25,7 +26,7 @@ class JourneyView implements JsonSerializable {
     /**
      * @return stdClass
      */
-    public function jsonSerialize() {
+    public function jsonSerialize(): stdClass {
         $json = new stdClass();
         $json->origin = $this->journey->getOrigin();
         $json->destination = $this->journey->getDestination();
@@ -40,11 +41,11 @@ class JourneyView implements JsonSerializable {
      * @param Leg $leg
      * @return stdClass
      */
-    private function getLeg(Leg $leg) {
+    private function getLeg(Leg $leg): stdClass {
         $json = new stdClass;
         $json->mode = strtolower($leg->getMode());
 
-        if ($leg->isTransfer()) {
+        if ($leg instanceof FixedLeg) {
             $json->origin = $leg->getOrigin();
             $json->destination = $leg->getDestination();
             $json->duration = $this->getTime($leg->getDuration());
@@ -52,23 +53,27 @@ class JourneyView implements JsonSerializable {
             return $json;
         }
 
+        /** @var TimetableLeg $leg */
         $json->service = $leg->getService();
         $json->operator = $leg->getOperator();
-        $json->callingPoints = [
-            $this->getCallingPoint($leg->getOrigin(), $leg->getDepartureTime())
-        ];
+        $json->callingPoints = [];
 
-        foreach ($leg->getConnections() as $c) {
-            $json->callingPoints[] = $this->getCallingPoint($c->getDestination(), $c->getArrivalTime());
+        foreach ($leg->getCallingPoints() as $c) {
+            $json->callingPoints[] = $this->getCallingPoint($c->getStation(), $c->getArrivalTime() ?? $c->getDepartureTime());
         }
 
         return $json;
     }
 
-    private function getCallingPoint($station, $time) {
+    /**
+     * @param $station
+     * @param $time
+     * @return stdClass
+     */
+    private function getCallingPoint(string $station, int $time): stdClass {
         $point = new stdClass;
         $point->station = $station;
-        $point->time = $this->getTime($time);
+        $point->time = $this->getTime($time); //TODO change to arrival time and departure time
 
         return $point;
     }
@@ -77,7 +82,7 @@ class JourneyView implements JsonSerializable {
      * @param  int $time
      * @return string
      */
-    private function getTime($time) {
+    private function getTime(int $time): string {
         return gmdate("H:i", $time % 86400);
     }
 

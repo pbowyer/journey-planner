@@ -2,22 +2,23 @@
 
 namespace JourneyPlanner\App;
 
-use JourneyPlanner\App\Console\Command\AssignStationClusters;
-use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Console;
-use JourneyPlanner\Lib\Storage\Cache\MemcachedCache;
-use JourneyPlanner\Lib\Storage\Schedule\CachedProvider;
-use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
-use JourneyPlanner\Lib\Storage\Cache\RedisCache;
+use JourneyPlanner\Lib\Journey\Repository\FixedLegRepository;
+use JourneyPlanner\Lib\Journey\Repository\InterchangeRepository;
+use JourneyPlanner\Lib\Journey\Repository\TimetableLegRepository;
+use JourneyPlanner\Lib\Planner\Filter\SlowJourneyFilter;
+use JourneyPlanner\Lib\Planner\GroupStationJourneyPlanner;
+use JourneyPlanner\Lib\Station\Repository\StationRepository;
+use JourneyPlanner\Lib\Cache\MemcachedCache;
+use JourneyPlanner\Lib\Cache\RedisCache;
+use JourneyPlanner\Lib\TransferPattern\Repository\TransferPatternRepository;
 use Memcached;
 use PDO;
 use Pimple\Container as PimpleContainer;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Redis;
-use Spork\ProcessManager;
-use Spork\Batch\Strategy\ChunkStrategy;
 
 class Container extends PimpleContainer {
 
@@ -28,7 +29,7 @@ class Container extends PimpleContainer {
         parent::__construct($values);
 
         $this['name'] = 'PHP Journey Planner';
-        $this['version'] = '1.1';
+        $this['version'] = '2.0';
 
         $this['console'] = function($container) {
             return new Console($container);
@@ -37,30 +38,39 @@ class Container extends PimpleContainer {
         $this['db'] = $this->createPDO();
 
         $this['command.plan_journey'] = function($container) {
-            return new PlanJourney($container['provider.station'], $container['provider.schedule']);
+            return new PlanJourney($container['planner.group_station'], $container['repository.station']);
         };
 
-        $this['command.assign_clusters'] = function($container) {
-            return new AssignStationClusters($container['db']);
+        $this['repository.station'] = function($container) {
+            return new StationRepository($container['db']);
         };
-        
-        $this['command.transfer_pattern'] = function($container) {
-            return new FindTransferPatterns(
-                $container['provider.station'],
-                $container['provider.schedule'],
-                new ProcessManager(),
-                new ChunkStrategy($container['cpu.cores']),
-                [$this, 'createPDO']
+
+        $this['repository.transfer_pattern'] = function($container) {
+            return new TransferPatternRepository($container['db'], $container['cache'], $container['repository.timetable_leg']);
+        };
+
+        $this['repository.timetable_leg'] = function($container) {
+            return new TimetableLegRepository($container['db'], $container['cache']);
+        };
+
+        $this['repository.fixed_leg'] = function($container) {
+            return new FixedLegRepository($container['db'], $container['cache']);
+        };
+
+        $this['repository.interchange'] = function($container) {
+            return new InterchangeRepository($container['db'], $container['cache']);
+        };
+
+        $this['planner.group_station'] = function($container) {
+            return new GroupStationJourneyPlanner(
+                $container['repository.transfer_pattern'],
+                $container['repository.station'],
+                $container['repository.fixed_leg'],
+                $container['repository.interchange'],
+                [new SlowJourneyFilter()]
             );
         };
 
-        $this['provider.station'] = function($container) {
-            return new DatabaseStationProvider($container['db']);
-        };
-
-        $this['provider.schedule'] = function($container) {
-            return new CachedProvider($container['db'], $container['cache']);
-        };
 
         $this['logger'] = function() {
             $stream = new StreamHandler('php://stdout');
@@ -68,12 +78,6 @@ class Container extends PimpleContainer {
             $logger->pushHandler($stream);
 
             return $logger;
-        };
-
-        $this['cpu.cores'] = function () {
-            $cpuinfo = file_get_contents('/proc/cpuinfo');
-            preg_match_all('/^processor/m', $cpuinfo, $matches);
-            return count($matches[0]);
         };
 
         $this['cache.redis'] = function () {

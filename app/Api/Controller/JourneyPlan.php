@@ -2,12 +2,9 @@
 
 namespace JourneyPlanner\App\Api\Controller;
 
-use JourneyPlanner\Lib\Algorithm\Filter\SlowJourneyFilter;
-use JourneyPlanner\Lib\Algorithm\MultiSchedulePlanner;
-use JourneyPlanner\Lib\Network\Journey;
-use JourneyPlanner\Lib\Storage\Schedule\ScheduleProvider;
-use JourneyPlanner\Lib\Storage\Station\DatabaseStationProvider;
-use JourneyPlanner\Lib\Storage\Station\StationProvider;
+use DateTime;
+use JourneyPlanner\Lib\Journey\Journey;
+use JourneyPlanner\Lib\Planner\GroupStationJourneyPlanner;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,17 +19,11 @@ class JourneyPlan {
      * @return JsonResponse
      */
     public function __invoke(Application $app, Request $request) {
-        /** @var StationProvider $stationProvider */
-        $stationProvider = $app['provider.station'];
-        /** @var ScheduleProvider $scheduleProvider */
-        $scheduleProvider = $app['provider.schedule'];
+        /** @var GroupStationJourneyPlanner $planner */
+        $planner = $app['planner.group_station'];
 
-        $targetTime = strtotime($request->get('date')." UTC");
-
-        $origins = $stationProvider->getRelevantStations($request->get('origin'));
-        $destinations = $stationProvider->getRelevantStations($request->get('destination'));
-        $planner = new MultiSchedulePlanner($scheduleProvider, [new SlowJourneyFilter()]);
-        $journeys = $planner->getJourneys($origins, $destinations, $targetTime);
+        $targetTime = new DateTime($request->get('date')." UTC");
+        $journeys = $planner->getJourneys($request->get('origin'), $request->get('destination'), $targetTime);
         
         $views = array_map(function(Journey $journey) { return new JourneyView($journey); }, $journeys);
 
