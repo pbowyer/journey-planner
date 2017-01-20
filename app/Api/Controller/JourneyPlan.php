@@ -4,7 +4,7 @@ namespace JourneyPlanner\App\Api\Controller;
 
 use DateTime;
 use JourneyPlanner\Lib\Journey\Journey;
-use JourneyPlanner\Lib\Planner\GroupStationJourneyPlanner;
+use JourneyPlanner\Lib\Planner\GroupStationPlanner;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +19,7 @@ class JourneyPlan {
      * @return JsonResponse
      */
     public function __invoke(Application $app, Request $request) {
-        /** @var GroupStationJourneyPlanner $planner */
+        /** @var GroupStationPlanner $planner */
         $planner = $app['planner.group_station'];
 
         $targetTime = new DateTime($request->get('date')." UTC");

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace JourneyPlanner\Lib\Journey\Repository;
+namespace JourneyPlanner\Lib\Station\Repository;
 
 use JourneyPlanner\Lib\Cache\Cache;
 use PDO;

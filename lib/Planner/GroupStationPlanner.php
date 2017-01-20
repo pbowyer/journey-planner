@@ -3,10 +3,9 @@
 namespace JourneyPlanner\Lib\Planner;
 
 use DateTime;
-use JourneyPlanner\Lib\Journey\FixedLeg;
 use JourneyPlanner\Lib\Journey\Journey;
 use JourneyPlanner\Lib\Journey\Repository\FixedLegRepository;
-use JourneyPlanner\Lib\Journey\Repository\InterchangeRepository;
+use JourneyPlanner\Lib\Station\Repository\InterchangeRepository;
 use JourneyPlanner\Lib\Planner\Filter\JourneyFilter;
 use JourneyPlanner\Lib\Station\Repository\StationRepository;
 use JourneyPlanner\Lib\TransferPattern\Repository\TransferPatternRepository;
@@ -14,7 +13,7 @@ use JourneyPlanner\Lib\TransferPattern\Repository\TransferPatternRepository;
 /**
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class GroupStationJourneyPlanner {
+class GroupStationPlanner {
 
     private $patternRepository;
     private $stationRepository;

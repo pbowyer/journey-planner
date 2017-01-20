@@ -16,7 +16,7 @@ class CallingPoint {
      * @param $arrivalTime
      * @param $departureTime
      */
-    public function __construct(string $station, $arrivalTime, $departureTime) {
+    public function __construct(string $station, int $arrivalTime = null, int $departureTime = null) {
         $this->station = $station;
         $this->arrivalTime = $arrivalTime;
         $this->departureTime = $departureTime;

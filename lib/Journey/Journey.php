@@ -53,6 +53,8 @@ class Journey {
                 return $leg->getDepartureTime() - $transferDuration;
             }
         }
+
+        return 0;
     }
 
     /**
@@ -69,6 +71,8 @@ class Journey {
                 return $this->legs[$i]->getArrivalTime() + $transferDuration;
             }
         }
+
+        return 0;
     }
 
     /**

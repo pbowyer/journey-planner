@@ -1,9 +1,9 @@
 Journey Planner [![Build Status](https://travis-ci.org/open-track/journey-planner.svg?branch=master)](https://travis-ci.org/open-track/journey-planner)
 ===============
 
-A simple journey planner that uses a combination of the Connection Scan Algorithm and Transfer Patterns to quickly (~50ms) return a full days schedule of journeys. It currently uses UK Rail data but could include any GTFS-ish dataset. 
+A simple journey planner that uses Transfer Patterns to quickly (~50ms) return a full days schedule of journeys. It currently uses UK Rail data but could include any GTFS-ish dataset. 
 
-The journey planner is available to use through the CLI, which only returns a single result or an API that returns many results. You can see it in action and understand the API call by viewing [traintickets.to](http://traintickets.to).
+The journey planner is available to use through the CLI or an API. You can see it in action and understand the API call by viewing [traintickets.to](http://traintickets.to).
 
 There is a fairly basic journey filter applied to remove some of the noise. A journey is removed if it departs at the same time as another but arrives later, or it arrives at the same time and departs earlier. In the case of a tie the journey with the least number of changes is used.
 
@@ -17,7 +17,7 @@ export DATABASE_PASSWORD={{ database_password }}
 export DATABASE_HOSTNAME={{ database_hostname }}
 ```
 
-Instead of this you may use the [traintickets.to development environment](https://github.com/linusnorton/traintickets.to).
+Instead of this you may use the [traintickets.to development environment](https://github.com/open-track/ansible).
 
 ## Set up
 
@@ -49,12 +49,12 @@ curl "ttt.local/api/journey-plan?origin=PDW&destination=MAR&date=2016-07-25T09:0
 
 ## PHP interface
 ```
-$loader = $app['loader.database'];
-$targetTime = strtotime("2016-07-25T09:00");
 
-$origins = $loader->getRelevantStations("PDW");
-$destinations = $loader->getRelevantStations("CST");
-$planner = new MultiSchedulePlanner($loader, [new SlowJourneyFilter()]);
+$origin = "PDW";
+$destination = "CST";
+$targetTime = new DateTime("2016-07-25T09:00 UTC");
+
+$planner = $app["planner.group_station"];
 $journeys = $planner->getJourneys($origins, $destinations, $targetTime);
 
 print_r($journeys);

@@ -6,7 +6,7 @@ use DateTime;
 use JourneyPlanner\Lib\Journey\FixedLeg;
 use JourneyPlanner\Lib\Journey\Journey;
 use JourneyPlanner\Lib\Journey\TimetableLeg;
-use JourneyPlanner\Lib\Planner\GroupStationJourneyPlanner;
+use JourneyPlanner\Lib\Planner\GroupStationPlanner;
 use JourneyPlanner\Lib\Station\Repository\StationRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -20,10 +20,10 @@ class PlanJourney extends ConsoleCommand {
     private $stationRepository;
 
     /**
-     * @param GroupStationJourneyPlanner $journeyPlanner
+     * @param GroupStationPlanner $journeyPlanner
      * @param StationRepository $stationRepository
      */
-    public function __construct(GroupStationJourneyPlanner $journeyPlanner, StationRepository $stationRepository) {
+    public function __construct(GroupStationPlanner $journeyPlanner, StationRepository $stationRepository) {
         parent::__construct();
 
         $this->journeyPlanner = $journeyPlanner;

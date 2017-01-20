@@ -5,10 +5,10 @@ namespace JourneyPlanner\App;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Console;
 use JourneyPlanner\Lib\Journey\Repository\FixedLegRepository;
-use JourneyPlanner\Lib\Journey\Repository\InterchangeRepository;
+use JourneyPlanner\Lib\Station\Repository\InterchangeRepository;
 use JourneyPlanner\Lib\Journey\Repository\TimetableLegRepository;
 use JourneyPlanner\Lib\Planner\Filter\SlowJourneyFilter;
-use JourneyPlanner\Lib\Planner\GroupStationJourneyPlanner;
+use JourneyPlanner\Lib\Planner\GroupStationPlanner;
 use JourneyPlanner\Lib\Station\Repository\StationRepository;
 use JourneyPlanner\Lib\Cache\MemcachedCache;
 use JourneyPlanner\Lib\Cache\RedisCache;
@@ -62,7 +62,7 @@ class Container extends PimpleContainer {
         };
 
         $this['planner.group_station'] = function($container) {
-            return new GroupStationJourneyPlanner(
+            return new GroupStationPlanner(
                 $container['repository.transfer_pattern'],
                 $container['repository.station'],
                 $container['repository.fixed_leg'],
