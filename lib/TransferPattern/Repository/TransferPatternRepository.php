@@ -43,10 +43,10 @@ class TransferPatternRepository {
         $results = [];
 
         foreach ($this->getTransferPatternsFromDB($origin . $destination) as $transferPattern) {
-            $scheduleLegs = $this->getTransferPatternSegment($transferPattern, $dateTime);
+            $segments = $this->getTransferPatternSegments($transferPattern, $dateTime);
 
-            if (count($scheduleLegs) > 0) {
-                $results[] = new TransferPattern($scheduleLegs);
+            if (count($segments) > 0) {
+                $results[] = new TransferPattern($segments);
             }
         }
         return $results;
@@ -57,7 +57,7 @@ class TransferPatternRepository {
      * @param DateTime $dateTime
      * @return PatternSegment[]
      */
-    private function getTransferPatternSegment(string $transferPattern, DateTime $dateTime): array  {
+    private function getTransferPatternSegments(string $transferPattern, DateTime $dateTime): array  {
         $pattern = str_split($transferPattern, 3);
         $legLength = count($pattern);
         $patternLegs = [];
@@ -67,6 +67,9 @@ class TransferPatternRepository {
 
             if (count($legs) > 0) {
                 $patternLegs[] = new PatternSegment($legs);
+            }
+            else {
+                return []; // if any leg is missing services the whole pattern breaks down
             }
         }
 

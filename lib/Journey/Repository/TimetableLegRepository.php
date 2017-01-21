@@ -109,16 +109,18 @@ class TimetableLegRepository {
             $callingPoints[] = new CallingPoint($prev["station"], $prev["arrival_time"], $prev["departure_time"]);
         }
 
-        $result[] = new TimetableLeg(
-            $prev["origin"],
-            $prev["destination"],
-            $prev["type"],
-            $prev["leg_departure_time"],
-            $prev["leg_arrival_time"],
-            $callingPoints,
-            $prev["service"],
-            $prev["operator"]
-        );
+        if ($prev !== null) {
+            $result[] = new TimetableLeg(
+                $prev["origin"],
+                $prev["destination"],
+                $prev["type"],
+                $prev["leg_departure_time"],
+                $prev["leg_arrival_time"],
+                $callingPoints,
+                $prev["service"],
+                $prev["operator"]
+            );
+        }
 
         return $result;
     }
