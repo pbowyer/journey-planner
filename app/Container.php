@@ -3,6 +3,7 @@
 namespace JourneyPlanner\App;
 
 use JourneyPlanner\App\Console\Command\AssignStationClusters;
+use JourneyPlanner\App\Console\Command\Countrywide;
 use JourneyPlanner\App\Console\Command\FindTransferPatterns;
 use JourneyPlanner\App\Console\Command\PlanJourney;
 use JourneyPlanner\App\Console\Console;
@@ -38,6 +39,10 @@ class Container extends PimpleContainer {
 
         $this['command.plan_journey'] = function($container) {
             return new PlanJourney($container['provider.station'], $container['provider.schedule']);
+        };
+
+        $this['command.countrywide'] = function($container) {
+            return new Countrywide($container['provider.station'], $container['provider.schedule'], $container['db']);
         };
 
         $this['command.assign_clusters'] = function($container) {
